@@ -1,0 +1,15 @@
+{
+	"uuid":"vavms1",
+	"tcp":{
+		"addr":":8876",
+		"t_defaut_read_limit":"2m"
+	},
+	"redis":{
+		"addr":"127.0.0.1:6379",
+		"passwd":"redis",
+		"max_idle":100,
+		"t_conn_time_out":"30s",
+		"t_read_time_out":"31s",
+		"t_write_time_out":"32s" 
+	}
+}
