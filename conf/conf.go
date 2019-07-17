@@ -14,9 +14,9 @@ const (
 )
 
 type tcp_srv_cnf struct {
-	Addr             string        `json:"addr"`
-	DefautReadLimit  time.Duration `json:"defaut_read_limit"`
-	TDefautReadLimit string        `json:"t_defaut_read_limit"`
+	Addr              string `json:"addr"`
+	DefaultReadLimit  time.Duration
+	TDefaultReadLimit string `json:"t_default_read_limit"`
 }
 
 type redis_cnf struct {
@@ -31,14 +31,19 @@ type redis_cnf struct {
 	WriteTimeOut  time.Duration `json:"write_time_out"`
 }
 
-type ffmpeg_cnf struct {
-	PipePath string `json:"pipe_path"`
+type workspace_cnf struct {
+	PipePath     string `json:"pipe_path"`
+	FfmpegBin    string `json:"ffmpeg_bin"`
+	FfmpegArgsAV string `json:"ffmpeg_args_av"`
+	FfmpegArgsA  string `json:"ffmpeg_args_a"`
+	FfmpegArgsV  string `json:"ffmpeg_args_v"`
 }
 
 type Conf struct {
-	UUID  string       `json:"uuid"`
-	TCP   *tcp_srv_cnf `json:"tcp"`
-	Redis *redis_cnf   `json:"redis"`
+	UUID      string         `json:"uuid"`
+	TCP       *tcp_srv_cnf   `json:"tcp"`
+	Redis     *redis_cnf     `json:"redis"`
+	WorkSpace *workspace_cnf `json:"work_space"`
 }
 
 var instance Conf
@@ -50,7 +55,7 @@ func GetInstance() *Conf {
 		decoder := json.NewDecoder(file)
 		err := decoder.Decode(&instance)
 		error_check(err)
-		instance.TCP.DefautReadLimit, err = time.ParseDuration(instance.TCP.TDefautReadLimit)
+		instance.TCP.DefaultReadLimit, err = time.ParseDuration(instance.TCP.TDefaultReadLimit)
 		error_check(err)
 		instance.Redis.ConnTimeOut, err = time.ParseDuration(instance.Redis.TConnTimeOut)
 		error_check(err)

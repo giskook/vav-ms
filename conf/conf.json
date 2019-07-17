@@ -11,5 +11,12 @@
 		"t_conn_time_out":"30s",
 		"t_read_time_out":"31s",
 		"t_write_time_out":"32s" 
+	},
+	"work_space":{
+		"pipe_path":"./test",
+		"ffmpeg_bin":"/usr/local/bin/ffmpeg",
+		"ffmpeg_args_av":"%s -y -thread_queue_size 128 -use_wallclock_as_timestamps 1 -f %s -i %s -thread_queue_size 128 -use_wallclock_as_timestamps 1 -f %s -i %s -acodec aac -vcodec copy -f flv %s",
+		"ffmpeg_args_a":"%s -y -thread_queue_size 128 -use_wallclock_as_timestamps 1 -f %s -i %s -acodec aac -f flv %s",
+		"ffmpeg_args_v":"%s -y -thread_queue_size 128 -use_wallclock_as_timestamps 1 -f %s -i %s -vcodec copy -f flv %s"
 	}
 }

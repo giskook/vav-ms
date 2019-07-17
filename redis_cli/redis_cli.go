@@ -6,10 +6,7 @@ import (
 )
 
 const (
-	AV_STREAM_MEDIA string = "vav-ms-stream-media"
-	PLAY_TYPE_AV    string = "av"
-	PLAY_TYPE_V     string = "v"
-	PLAY_TYPE_A     string = "a"
+	AV_STREAM_MEDIA string = "vavms_stream_media"
 )
 
 func GetIDChannelKey(id, channel string) string {
