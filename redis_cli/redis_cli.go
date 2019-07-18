@@ -24,3 +24,7 @@ func Init(conf *conf.Conf) {
 	}
 	rc.GetInstance().Init(cnf)
 }
+
+func SetStatus(id_channel, play_type, status string) error {
+	return rc.GetInstance().SetVehicleChan(id_channel, play_type, status)
+}

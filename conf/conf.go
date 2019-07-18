@@ -39,11 +39,24 @@ type workspace_cnf struct {
 	FfmpegArgsV  string `json:"ffmpeg_args_v"`
 }
 
+type http_cnf struct {
+	Addr             string `json:"addr"`
+	ShutWaitTimeOut  time.Duration
+	TShutWaitTimeOut string `json:"t_shut_wait_time_out"`
+	WriteTimeOut     time.Duration
+	TWriteTimeOut    string `json:"t_write_time_out"`
+	ReadTimeOut      time.Duration
+	TReadTimeOut     string `json:"t_read_time_out"`
+	IdleTimeOut      time.Duration
+	TIdleTimeOut     string `json:"t_idle_time_out"`
+}
+
 type Conf struct {
 	UUID      string         `json:"uuid"`
 	TCP       *tcp_srv_cnf   `json:"tcp"`
 	Redis     *redis_cnf     `json:"redis"`
 	WorkSpace *workspace_cnf `json:"work_space"`
+	Http      *http_cnf      `json:"http"`
 }
 
 var instance Conf
@@ -63,7 +76,14 @@ func GetInstance() *Conf {
 		error_check(err)
 		instance.Redis.WriteTimeOut, err = time.ParseDuration(instance.Redis.TWriteTimeOut)
 		error_check(err)
-
+		instance.Http.WriteTimeOut, err = time.ParseDuration(instance.Http.TWriteTimeOut)
+		error_check(err)
+		instance.Http.ReadTimeOut, err = time.ParseDuration(instance.Http.TReadTimeOut)
+		error_check(err)
+		instance.Http.IdleTimeOut, err = time.ParseDuration(instance.Http.TIdleTimeOut)
+		error_check(err)
+		instance.Http.ShutWaitTimeOut, err = time.ParseDuration(instance.Http.TShutWaitTimeOut)
+		error_check(err)
 	})
 
 	return &instance

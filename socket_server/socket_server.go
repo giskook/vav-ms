@@ -79,26 +79,38 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return ffmpeg_path, nil
 	}
 
-	var suffix string
+	var pt string
 	var play_type int
+
 	if vavms_info.LiveStatus == rc.PLAY_STATUS_INIT && vavms_info.PlayBackStatus != rc.PLAY_STATUS_INIT { // live
-		suffix = "_live"
+		pt = ss.CONN_PLAY_TYPE_LIVE
 		play_type = vavms_info.LiveType
+		// modify redis
+		err = redis_cli.SetStatus(redis_cli.GetIDChannelKey(id, channel), rc.LIVE_STATUS, rc.PLAY_STATUS_REDIS_OK)
+		if err != nil {
+			mybase.ErrorCheckPlus(err, id, channel)
+			return err
+		}
 	} else if vavms_info.LiveStatus != rc.PLAY_STATUS_INIT && vavms_info.PlayBackStatus == rc.PLAY_STATUS_INIT { // play back
-		suffix = "_playback"
+		pt = ss.CONN_PLAY_TYPE_PLAY_BACK
 		play_type = vavms_info.PlayBackType
+		err = redis_cli.SetStatus(redis_cli.GetIDChannelKey(id, channel), rc.PLAYBACK_STATUS, rc.PLAY_STATUS_REDIS_OK)
+		if err != nil {
+			mybase.ErrorCheckPlus(err, id, channel)
+			return err
+		}
 	} else {
-		e := errors.New(fmt.Sprintf("redis not ok live status %d playback status %d ", id, channel, vavms_info.LiveStatus, vavms_info.PlayBackStatus))
+		e := errors.New(fmt.Sprintf("redis not ok live status %d playback status %d ", vavms_info.LiveStatus, vavms_info.PlayBackStatus))
 		mybase.ErrorCheckPlus(e, id, channel)
 		return e
 	}
 
-	ffmpeg_path, err := ffmpeg_symbol("vffmpeg_" + id + "_" + channel + suffix)
+	ffmpeg_path, err := ffmpeg_symbol("vffmpeg_" + id + "_" + channel + pt)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
 	}
-	path_a, path_v, err := open_pipe(play_type, "a"+suffix, "v"+suffix)
+	path_a, path_v, err := open_pipe(play_type, "a"+pt, "v"+pt)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
@@ -116,13 +128,26 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		break
 	}
 
-	c.SetFfmpegCmd(cmd)
+	c.SetProperty(id, channel, pt, cmd)
 
 	return nil
 }
 
-func (s *SocketServer) OnClose(conn *ss.Connection) bool {
-	return true
+func (s *SocketServer) OnClose(conn *ss.Connection) error {
+	if conn.PlayType == ss.CONN_PLAY_TYPE_LIVE {
+		err := redis_cli.SetStatus(redis_cli.GetIDChannelKey(conn.SIM, conn.Channel), rc.LIVE_STATUS, rc.PLAY_STATUS_REDIS_NONE)
+		if err != nil {
+			return err
+		}
+	}
+	if conn.PlayType == ss.CONN_PLAY_TYPE_PLAY_BACK {
+		err := redis_cli.SetStatus(redis_cli.GetIDChannelKey(conn.SIM, conn.Channel), rc.PLAYBACK_STATUS, rc.PLAY_STATUS_REDIS_NONE)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func NewSocketServer(conf *conf.Conf) *SocketServer {
