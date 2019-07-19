@@ -20,6 +20,7 @@ Show all stream medias
 { 
 	"code":"0",
 	"desc":"成功",
+	"data":[]
 ] }
 ```
 ### OR

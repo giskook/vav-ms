@@ -1,7 +1,7 @@
 package v1
 
 import (
-	myhttp "github.com/giskook/go/http"
+	gkhttp "github.com/giskook/go/http"
 	"github.com/giskook/vav-ms/base"
 	"net/http"
 )
@@ -14,5 +14,5 @@ func common_reply(w http.ResponseWriter, http_status int, code string, data inte
 	} else {
 		err_msg = base.ErrorMap[code]
 	}
-	myhttp.EncodeResponse(w, code, data, err_msg)
+	gkhttp.EncodeResponse(w, code, data, err_msg)
 }

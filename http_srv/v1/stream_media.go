@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	gkbase "github.com/giskook/go/base"
 	gkhttp "github.com/giskook/go/http"
+	vcbase "github.com/giskook/vav-common/base"
 	rc "github.com/giskook/vav-common/redis_cli"
 	"github.com/giskook/vav-ms/base"
 	"github.com/giskook/vav-ms/redis_cli"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -51,6 +53,41 @@ func stream_media_post(w http.ResponseWriter, r *http.Request) (int, string, err
 	return http.StatusCreated, base.HTTP_OK, nil
 }
 
+func stream_media_del(w http.ResponseWriter, r *http.Request) (int, string, error) {
+	vars := mux.Vars(r)
+	index := vars["index"]
+	ok := rc.GetInstance().DelStreamMedia(redis_cli.AV_STREAM_MEDIA, index)
+	if ok {
+		return http.StatusOK, base.HTTP_OK, nil
+	}
+
+	return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR_DEL_STREAM_MEDIA, nil
+}
+
+func stream_media_put(w http.ResponseWriter, r *http.Request) (int, string, error) {
+	vars := mux.Vars(r)
+	index := vars["index"]
+	r.ParseForm()
+	defer r.Body.Close()
+	decoder := json.NewDecoder(r.Body)
+	var stream_media vcbase.StreamMedia
+	err := decoder.Decode(&stream_media)
+	if err != nil {
+		gkbase.ErrorCheck(err)
+		return http.StatusBadRequest, base.HTTP_BAD_REQUEST_DECODE, err
+	}
+	if stream_media.AccessUUID == "" || stream_media.DomainInner == "" || stream_media.DomainOuter == "" {
+		gkbase.ErrorCheck(base.ERROR_BAD_REQUEST_MISSING)
+		return http.StatusBadRequest, base.HTTP_BAD_REQUEST_MISSING, base.ERROR_BAD_REQUEST_MISSING
+	}
+	ok := rc.GetInstance().UpdateStreamMedia(redis_cli.AV_STREAM_MEDIA, index, &stream_media)
+	if ok {
+		return http.StatusOK, base.HTTP_OK, nil
+	}
+
+	return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR_UPD_STREAM_MEDIA, nil
+}
+
 func StreamMedia(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if x := recover(); x != nil {
@@ -71,6 +108,10 @@ func StreamMedia(w http.ResponseWriter, r *http.Request) {
 		http_status, internal_status, err = stream_media_post(w, r)
 	case http.MethodGet:
 		http_status, internal_status, data, err = stream_media_get(w, r)
+	case http.MethodDelete:
+		http_status, internal_status, err = stream_media_del(w, r)
+	case http.MethodPut:
+		http_status, internal_status, err = stream_media_put(w, r)
 	}
 
 	common_reply(w, http_status, internal_status, data, err)

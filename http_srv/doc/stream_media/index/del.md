@@ -14,7 +14,7 @@ Delete the specific stream media
 
 **Condition** : If the index exists.
 
-**Code** : `204 NO CONTENT`
+**Code** : `200 OK`
 
 **Content** : 
 
@@ -26,22 +26,7 @@ Delete the specific stream media
 ```
 ## Error Responses
 
-**Condition** : If the index is over the range 
-
-**Code** : `404 NOT FOUND`
-
-**Content** : 
-
-```json
-{
-    "code":"40400",
-    "desc":"没有找到该服务器(40400)"
-}
-```
-
-### OR
-
-**Condition** : redis exec error
+**Condition** : del error
 
 **Code** : `500 INTERNAL SERVER ERROR`
 

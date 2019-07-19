@@ -20,8 +20,10 @@
 		"ffmpeg_args_v":"%s -y -thread_queue_size 128 -use_wallclock_as_timestamps 1 -f %s -i %s -vcodec copy -f flv %s"
 	},
 	"http":{
-		"t_write_time_out":"1m",
-		"t_read_time_out":"30s",
-		"t_idle_time_out":"30s"
+		"Addr":":8888",
+		"t_write_time_out":"15s",
+		"t_read_time_out":"15s",
+		"t_idle_time_out":"60s",
+		"t_shut_wait_time_out":"10s"
 	}
 }

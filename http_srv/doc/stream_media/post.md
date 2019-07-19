@@ -8,22 +8,16 @@ Create stream media for vavms
 
 **Data constraints**
 
-Provide stream media 
-
-```json
-{ 
-	"stream_medias":[{"access_uuid":"[vavms1]","domain_inner":"[rtmp inner addr]","domain_outer":"[rtmp outer addr]" },
-	"stream_medias":[{"access_uuid":"[vavms2]","domain_inner":"[rtmp inner addr]","domain_outer":"[rtmp outer addr]" },
-] }
-```
-
 **Data example** All fields must be sent
 
 ```json
 { 
-	"stream_medias":[{"access_uuid":"vavms1","domain_inner":"rtmp://127.0.0.1:8080/myapp","domain_outer":"rtmp://222.222.218.52:8080/myapp" },
-	{"access_uuid":"vavms1","domain_inner":"rtmp://127.0.0.1:8080/myapp","domain_outer":"rtmp://222.222.218.53:8080/myapp" }]
- }
+	"stream_medias":
+		[
+		{"access_uuid":"vavms1","domain_inner":"rtmp://127.0.0.1:8080/myapp","domain_outer":"rtmp://222.222.218.52:8080/myapp" },
+		{"access_uuid":"vavms1","domain_inner":"rtmp://127.0.0.1:8080/myapp","domain_outer":"rtmp://222.222.218.53:8080/myapp" }
+		]
+}
 ```
 ## Success Response
 
