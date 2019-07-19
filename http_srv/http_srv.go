@@ -49,6 +49,7 @@ func (h *HttpSrv) init_api_v1(r *mux.Router) {
 	s.HandleFunc("/stream_media/{index}", v1.StreamMedia).Methods("DELETE", "PUT")
 	s.HandleFunc("/stream_media", v1.StreamMedia).Methods("POST", "GET")
 	s.HandleFunc("/access_addr", v1.AccessAddr).Methods("POST", "GET")
+	s.HandleFunc("/vehicle_property/{sim}", v1.VehicleProperty).Methods("POST")
 	//s.HandleFunc("/user/{user_id}/sms", v1.Handler_api_sms).Methods("POST")
 }
 

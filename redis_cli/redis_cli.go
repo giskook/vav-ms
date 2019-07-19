@@ -37,3 +37,7 @@ func SetAccessAddr(ip, port string) error {
 func GetAccessAddr() (string, string, error) {
 	return rc.GetInstance().GetAccessAddr(VAVMS_ACCESS_ADDR)
 }
+
+func SetVehicleProperty(sim, audio_format, video_format string) error {
+	return rc.GetInstance().SetVehicleStreamFormat(sim, audio_format, video_format)
+}
