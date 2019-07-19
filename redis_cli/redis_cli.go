@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	AV_STREAM_MEDIA string = "vavms_stream_media"
+	VAVMS_STREAM_MEDIA string = "vavms_stream_media"
+	VAVMS_ACCESS_ADDR  string = "vavms_access_addr"
 )
 
 func GetIDChannelKey(id, channel string) string {
@@ -27,4 +28,12 @@ func Init(conf *conf.Conf) {
 
 func SetStatus(id_channel, play_type, status string) error {
 	return rc.GetInstance().SetVehicleChan(id_channel, play_type, status)
+}
+
+func SetAccessAddr(ip, port string) error {
+	return rc.GetInstance().SetAccessAddr(VAVMS_ACCESS_ADDR, ip, port)
+}
+
+func GetAccessAddr() (string, string, error) {
+	return rc.GetInstance().GetAccessAddr(VAVMS_ACCESS_ADDR)
 }

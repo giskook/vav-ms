@@ -1,27 +1,26 @@
-# Create stream media
+# Create access addr
 
-Create stream media for vavms
+Create access addr for vavms
 
-**URL** : `/vavms/api/v1/stream_media`
+**URL** : `/vavms/api/v1/access_addr`
 
 **Method** : POST
 
 **Data constraints**
 
-**Data example** All fields must be sent
+All fields must be sent
+
+**Data example** 
 
 ```json
 { 
-	"stream_medias":
-		[
-		{"access_uuid":"vavms1","domain_inner":"rtmp://127.0.0.1:8080/myapp","domain_outer":"rtmp://222.222.218.52:8080/myapp" },
-		{"access_uuid":"vavms1","domain_inner":"rtmp://127.0.0.1:8080/myapp","domain_outer":"rtmp://222.222.218.53:8080/myapp" }
-		]
+	"IP":"222.222.218.52",
+	"Port":"8875"
 }
 ```
 ## Success Response
 
-**Condition** : stream media is set to redis correctly.
+**Condition** : access addr is set to redis correctly.
 
 **Code** : `201 Created`
 
@@ -66,7 +65,7 @@ Create stream media for vavms
 
 ### OR
 
-**Condition** : stream media not add to redis
+**Condition** : access addr not add to redis
 
 **Code** : `500 INTERNAL SERVER ERROR`
 
@@ -74,8 +73,8 @@ Create stream media for vavms
 
 ```json
 {
-    "code":"50001",
-    "desc":"添加流媒体服务器地址失败(50001)"
+    "code":"50005",
+    "desc":"设置车机连接地址失败(50005)"
 }
 ```
 ### OR
@@ -92,4 +91,3 @@ Create stream media for vavms
     "desc":"内部错误(50000)"
 }
 ```
-

@@ -19,7 +19,7 @@ type SocketServer struct {
 }
 
 func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
-	vavms_info, err := rc.GetInstance().GetVavmsInfo(id, redis_cli.GetIDChannelKey(id, channel), s.conf.UUID, redis_cli.AV_STREAM_MEDIA)
+	vavms_info, err := rc.GetInstance().GetVavmsInfo(id, redis_cli.GetIDChannelKey(id, channel), s.conf.UUID, redis_cli.VAVMS_STREAM_MEDIA)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
