@@ -18,6 +18,33 @@ type SocketServer struct {
 	conf   *conf.Conf
 }
 
+func (s *SocketServer) get_play_type(sim, channel string, info *vcbase.VavmsInfo) (int, string, string, error) {
+	var data_type, conn_play_type string
+	play_type := 0
+
+	if info.Status == rc.STATUS_LIVE {
+		data_type = info.LiveType
+		conn_play_type = ss.CONN_PLAY_LIVE
+	} else if info.Status == rc.STATUS_BACK {
+		data_type = info.PlayBackType
+		conn_play_type = ss.CONN_PLAY_BACK
+	} else {
+		err := errors.New(fmt.Sprintf("sim %s chan %s redis [status] shuld set to [%s] or [%s] now is [%s]", sim, channel, rc.STATUS_LIVE, rc.STATUS_BACK, info.Status))
+		return 0, "", "", err
+	}
+
+	if data_type == rc.DATA_TYPE_AUDIO_VIDEO ||
+		data_type == rc.DATA_TYPE_VIDEO {
+		play_type &= 1
+	}
+	if data_type == rc.DATA_TYPE_TWO_WAY_INTERCOM ||
+		data_type == rc.DATA_TYPE_LISTEN {
+		play_type &= 2
+	}
+
+	return play_type, conn_play_type, data_type, nil
+}
+
 func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	vavms_info, err := rc.GetInstance().GetVavmsInfo(id, redis_cli.GetIDChannelKey(id, channel), s.conf.UUID, redis_cli.VAVMS_STREAM_MEDIA)
 	if err != nil {
@@ -34,9 +61,10 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	}
 
 	// pipe path and open pipe
-	open_pipe := func(play_type int, aname, vname string) (string, string, error) {
+	open_pipe := func(play_type, aname, vname string) (string, string, error) {
 		var pipe_a, pipe_v string
-		if (play_type & rc.PLAY_TYPE_V) != 0 {
+		if play_type == rc.DATA_TYPE_AUDIO_VIDEO ||
+			play_type == rc.DATA_TYPE_VIDEO {
 			pipe_v = path.Join(s.conf.WorkSpace.PipePath, id, channel, vname)
 			err = vcbase.Mkfifo(pipe_v)
 			if err != nil {
@@ -50,7 +78,10 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 			}
 		}
 
-		if (play_type & rc.PLAY_TYPE_A) != 0 {
+		if play_type == rc.DATA_TYPE_AUDIO_VIDEO ||
+			play_type == rc.DATA_TYPE_TWO_WAY_INTERCOM ||
+			play_type == rc.DATA_TYPE_LISTEN ||
+			play_type == rc.DATA_TYPE_BROADCAST {
 			pipe_a = path.Join(s.conf.WorkSpace.PipePath, id, channel, aname)
 			err = vcbase.Mkfifo(pipe_a)
 			if err != nil {
@@ -79,74 +110,49 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return ffmpeg_path, nil
 	}
 
-	var pt string
-	var play_type int
-
-	if vavms_info.LiveStatus == rc.PLAY_STATUS_INIT && vavms_info.PlayBackStatus != rc.PLAY_STATUS_INIT { // live
-		pt = ss.CONN_PLAY_TYPE_LIVE
-		play_type = vavms_info.LiveType
-		// modify redis
-		err = redis_cli.SetStatus(redis_cli.GetIDChannelKey(id, channel), rc.LIVE_STATUS, rc.PLAY_STATUS_REDIS_OK)
-		if err != nil {
-			mybase.ErrorCheckPlus(err, id, channel)
-			return err
-		}
-	} else if vavms_info.LiveStatus != rc.PLAY_STATUS_INIT && vavms_info.PlayBackStatus == rc.PLAY_STATUS_INIT { // play back
-		pt = ss.CONN_PLAY_TYPE_PLAY_BACK
-		play_type = vavms_info.PlayBackType
-		err = redis_cli.SetStatus(redis_cli.GetIDChannelKey(id, channel), rc.PLAYBACK_STATUS, rc.PLAY_STATUS_REDIS_OK)
-		if err != nil {
-			mybase.ErrorCheckPlus(err, id, channel)
-			return err
-		}
-	} else {
-		e := errors.New(fmt.Sprintf("redis not ok live status %d playback status %d ", vavms_info.LiveStatus, vavms_info.PlayBackStatus))
-		mybase.ErrorCheckPlus(e, id, channel)
-		return e
-	}
-
-	ffmpeg_path, err := ffmpeg_symbol("vffmpeg_" + id + "_" + channel + pt)
+	play_type, conn_play_type, data_type, err := s.get_play_type(id, channel, vavms_info)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
 	}
-	path_a, path_v, err := open_pipe(play_type, "a"+pt, "v"+pt)
+
+	ffmpeg_path, err := ffmpeg_symbol("vffmpeg_" + id + "_" + channel + conn_play_type)
+	if err != nil {
+		mybase.ErrorCheckPlus(err, id, channel)
+		return err
+	}
+	path_a, path_v, err := open_pipe(data_type, "a"+conn_play_type, "v"+conn_play_type)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
 	}
 	var cmd string
-	switch vavms_info.LiveType {
-	case 3: // both a and v
+	switch play_type {
+	case 3:
 		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsAV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.Acodec, path_a, vavms_info.DomainInner+"/"+redis_cli.GetIDChannelKey(id, channel))
 		break
-	case 1: // v
+	case 1:
 		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.DomainInner+"/"+redis_cli.GetIDChannelKey(id, channel))
-		break
-	case 2: // a
+	case 2:
 		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsA, ffmpeg_path, vavms_info.Acodec, path_a, vavms_info.DomainInner+"/"+redis_cli.GetIDChannelKey(id, channel))
-		break
 	}
 
-	c.SetProperty(id, channel, pt, cmd)
+	c.SetProperty(id, channel, conn_play_type, cmd)
+	err = redis_cli.SetVehicleChanStatus(id, channel, rc.STATUS_INIT)
+	if err != nil {
+		mybase.ErrorCheckPlus(err, id, channel)
+		return err
+	}
+	err = redis_cli.SetVehicleUUID(id, channel, s.conf.UUID)
+	if err != nil {
+		mybase.ErrorCheckPlus(err, id, channel)
+		return err
+	}
 
 	return nil
 }
 
 func (s *SocketServer) OnClose(conn *ss.Connection) error {
-	if conn.PlayType == ss.CONN_PLAY_TYPE_LIVE {
-		err := redis_cli.SetStatus(redis_cli.GetIDChannelKey(conn.SIM, conn.Channel), rc.LIVE_STATUS, rc.PLAY_STATUS_REDIS_NONE)
-		if err != nil {
-			return err
-		}
-	}
-	if conn.PlayType == ss.CONN_PLAY_TYPE_PLAY_BACK {
-		err := redis_cli.SetStatus(redis_cli.GetIDChannelKey(conn.SIM, conn.Channel), rc.PLAYBACK_STATUS, rc.PLAY_STATUS_REDIS_NONE)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 

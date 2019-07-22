@@ -5,7 +5,6 @@ import (
 	gkbase "github.com/giskook/go/base"
 	gkhttp "github.com/giskook/go/http"
 	vcbase "github.com/giskook/vav-common/base"
-	rc "github.com/giskook/vav-common/redis_cli"
 	"github.com/giskook/vav-ms/base"
 	"github.com/giskook/vav-ms/redis_cli"
 	"github.com/gorilla/mux"
@@ -13,7 +12,7 @@ import (
 )
 
 func stream_media_get(w http.ResponseWriter, r *http.Request) (int, string, interface{}, error) {
-	stream_medias, err := rc.GetInstance().GetStreamMedia(redis_cli.VAVMS_STREAM_MEDIA, "0", "-1")
+	stream_medias, err := redis_cli.GetStreamMedia()
 	if err != nil {
 		return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR_GET_STREAM_MEDIA, nil, err
 	}
@@ -44,7 +43,7 @@ func stream_media_post(w http.ResponseWriter, r *http.Request) (int, string, err
 		}
 	}
 
-	err = rc.GetInstance().SetStreamMedia(redis_cli.VAVMS_STREAM_MEDIA, stream_medias.StreamMedias)
+	err = redis_cli.SetStreamMedia(stream_medias.StreamMedias)
 	if err != nil {
 		gkbase.ErrorCheck(err)
 		return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR_SET_STREAM_MEDIA, err
@@ -56,7 +55,7 @@ func stream_media_post(w http.ResponseWriter, r *http.Request) (int, string, err
 func stream_media_del(w http.ResponseWriter, r *http.Request) (int, string, error) {
 	vars := mux.Vars(r)
 	index := vars["index"]
-	ok := rc.GetInstance().DelStreamMedia(redis_cli.VAVMS_STREAM_MEDIA, index)
+	ok := redis_cli.DelStreamMedia(index)
 	if ok {
 		return http.StatusOK, base.HTTP_OK, nil
 	}
@@ -80,7 +79,7 @@ func stream_media_put(w http.ResponseWriter, r *http.Request) (int, string, erro
 		gkbase.ErrorCheck(base.ERROR_BAD_REQUEST_MISSING)
 		return http.StatusBadRequest, base.HTTP_BAD_REQUEST_MISSING, base.ERROR_BAD_REQUEST_MISSING
 	}
-	ok := rc.GetInstance().UpdateStreamMedia(redis_cli.VAVMS_STREAM_MEDIA, index, &stream_media)
+	ok := redis_cli.UpdateStreamMedia(index, &stream_media)
 	if ok {
 		return http.StatusOK, base.HTTP_OK, nil
 	}

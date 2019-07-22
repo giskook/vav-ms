@@ -13,6 +13,7 @@ Request audio and video stream
 ```json
 { 
 	"type":"live/back",
+	"priority":0
 }
 ```
 ## Success Response
@@ -32,6 +33,76 @@ Request audio and video stream
     "data":{ 
 		"url":"rtmp://222.222.218.52:8080/myapp/id_channel"
 	}
+}
+```
+### OR
+
+**Condition** : live stream not upload
+
+**Code** : `202 Accepted`
+
+**Content example** :
+
+```json 
+{
+    "code":"20200",
+    "desc":"请下发1078音视频指令",
+}
+```
+### OR
+
+**Condition** : 1078 alread sent please wait. 
+
+**Code** : `202 Accepted`
+
+**Content example** :
+
+```json 
+{
+    "code":"20201",
+    "desc":"1078音视频指令已下发,请等待",
+}
+```
+### OR
+
+**Condition** : vehicle's audio format and video format are not configured
+
+**Code** : `202 Accepted`
+
+**Content example** :
+
+```json 
+{
+    "code":"20202",
+    "desc":"车机音视频格式未设置",
+}
+```
+### OR
+
+**Condition** : access addr are not set
+
+**Code** : `202 Accepted`
+
+**Content example** :
+
+```json 
+{
+    "code":"20203",
+    "desc":"车机接入地址未设置",
+}
+```
+### OR
+
+**Condition** : stream media are not set 
+
+**Code** : `202 Accepted`
+
+**Content example** :
+
+```json 
+{
+    "code":"20204",
+    "desc":"流媒体地址未设置",
 }
 ```
 
@@ -62,21 +133,6 @@ Request audio and video stream
 {
     "code":"40001",
     "desc":"缺少参数(40001)"
-}
-```
-
-### OR
-
-**Condition** : stream media not add to redis
-
-**Code** : `500 INTERNAL SERVER ERROR`
-
-**Content** : 
-
-```json
-{
-    "code":"50001",
-    "desc":"添加流媒体服务器地址失败(50001)"
 }
 ```
 ### OR

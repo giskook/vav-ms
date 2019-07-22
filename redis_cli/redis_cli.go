@@ -1,6 +1,7 @@
 package redis_cli
 
 import (
+	vcbase "github.com/giskook/vav-common/base"
 	rc "github.com/giskook/vav-common/redis_cli"
 	"github.com/giskook/vav-ms/conf"
 )
@@ -26,10 +27,6 @@ func Init(conf *conf.Conf) {
 	rc.GetInstance().Init(cnf)
 }
 
-func SetStatus(id_channel, play_type, status string) error {
-	return rc.GetInstance().SetVehicleChan(id_channel, play_type, status)
-}
-
 func SetAccessAddr(ip, port string) error {
 	return rc.GetInstance().SetAccessAddr(VAVMS_ACCESS_ADDR, ip, port)
 }
@@ -40,4 +37,32 @@ func GetAccessAddr() (string, string, error) {
 
 func SetVehicleProperty(sim, audio_format, video_format string) error {
 	return rc.GetInstance().SetVehicleStreamFormat(sim, audio_format, video_format)
+}
+
+func GetVehicleProperty(sim string) (string, string, error) {
+	return rc.GetInstance().GetVehicleStreamFormat(sim)
+}
+
+func GetStreamMedia() ([]*vcbase.StreamMedia, error) {
+	return rc.GetInstance().GetStreamMedia(VAVMS_STREAM_MEDIA, "0", "-1")
+}
+
+func SetStreamMedia(s []*vcbase.StreamMedia) error {
+	return rc.GetInstance().SetStreamMedia(VAVMS_STREAM_MEDIA, s)
+}
+
+func DelStreamMedia(index string) bool {
+	return rc.GetInstance().DelStreamMedia(VAVMS_STREAM_MEDIA, index)
+}
+
+func UpdateStreamMedia(index string, new_stream_dedia *vcbase.StreamMedia) bool {
+	return rc.GetInstance().UpdateStreamMedia(VAVMS_STREAM_MEDIA, index, new_stream_dedia)
+}
+
+func SetVehicleChanStatus(id, channel, status string) error {
+	return rc.GetInstance().SetVehicleChan(GetIDChannelKey(id, channel), rc.KEY_STATUS, status)
+}
+
+func SetVehicleUUID(id, channel, uuid string) error {
+	return rc.GetInstance().SetVehicleChan(GetIDChannelKey(id, channel), rc.KEY_UUID, uuid)
 }

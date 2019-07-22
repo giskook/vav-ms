@@ -2,6 +2,11 @@ package base
 
 const (
 	HTTP_OK                                         string = "0"
+	HTTP_ACCEPTED_AV_REQUIRE                        string = "20200"
+	HTTP_ACCEPTED_AV_WAIT                           string = "20201"
+	HTTP_ACCEPTED_AV_FORMAT_NOT_SET                 string = "20202"
+	HTTP_ACCEPTED_AV_ACCESS_ADDR_NOT_SET            string = "20203"
+	HTTP_ACCEPTED_AV_STREAM_MEDIA_NOT_SET           string = "20204"
 	HTTP_BAD_REQUEST_DECODE                         string = "40000"
 	HTTP_BAD_REQUEST_MISSING                        string = "40001"
 	HTTP_INTERNAL_SERVER_ERROR                      string = "50000"
@@ -16,7 +21,13 @@ const (
 )
 
 var ErrorMap map[string]string = map[string]string{
-	HTTP_OK:                                         "成功",
+	HTTP_OK: "成功",
+
+	HTTP_ACCEPTED_AV_REQUIRE:                        "请下发1078音视频指令",
+	HTTP_ACCEPTED_AV_WAIT:                           "1078音视频指令已下发,请等待",
+	HTTP_ACCEPTED_AV_FORMAT_NOT_SET:                 "车机音视频格式未设置",
+	HTTP_ACCEPTED_AV_ACCESS_ADDR_NOT_SET:            "车机接入地址未设置",
+	HTTP_ACCEPTED_AV_STREAM_MEDIA_NOT_SET:           "流媒体地址未设置",
 	HTTP_BAD_REQUEST_DECODE:                         "参数解析出错",
 	HTTP_BAD_REQUEST_MISSING:                        "缺少参数",
 	HTTP_INTERNAL_SERVER_ERROR:                      "服务器内部错误",
