@@ -5,8 +5,11 @@
 The key is **vavms_stream_media** use **list** struct
 
 the list entity is a json struct.the json include 
+
 **access_uuid**
+
 **domain_inner**
+
 **domain_outer**
 
 ## access addr related
