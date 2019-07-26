@@ -51,12 +51,17 @@ type http_cnf struct {
 	TIdleTimeOut     string `json:"t_idle_time_out"`
 }
 
+type play_cnf struct {
+	PlayLockTTL int `json:"play_lock_ttl"`
+}
+
 type Conf struct {
 	UUID      string         `json:"uuid"`
 	TCP       *tcp_srv_cnf   `json:"tcp"`
 	Redis     *redis_cnf     `json:"redis"`
 	WorkSpace *workspace_cnf `json:"work_space"`
 	Http      *http_cnf      `json:"http"`
+	Play      *play_cnf      `json:"play"`
 }
 
 var instance Conf

@@ -14,9 +14,10 @@
 
 ## vehicle audio and video properties
 
-* [Set access addr](vehicle_property/post.md):`POST /vavms/api/v1/vehicle_property`
+* [Set vehicle properties](vehicle_property/post.md):`POST /vavms/api/v1/vehicle_property`
 
 ## request video and audio stream
 
-* [Request audio and video stream](stream/post.md):`POST /vavms/api/v1/stream/{sim}/{channel}`
+* [Set stream class](stream/post.md):`POST /vavms/api/v1/stream/{sim}/{channel}`
+* [Request audio and video stream](stream/get.md):`GET /vavms/api/v1/stream/{sim}/{channel}`
 

@@ -4,15 +4,31 @@ import (
 	vcbase "github.com/giskook/vav-common/base"
 	rc "github.com/giskook/vav-common/redis_cli"
 	"github.com/giskook/vav-ms/conf"
+	"strings"
 )
 
 const (
-	VAVMS_STREAM_MEDIA string = "vavms_stream_media"
-	VAVMS_ACCESS_ADDR  string = "vavms_access_addr"
+	VAVMS_STREAM_MEDIA         string = "vavms_stream_media"
+	VAVMS_ACCESS_ADDR          string = "vavms_access_addr"
+	VAVMS_STREAM_DATA_TYPE_KEY string = "data_type"
+	VAVMS_STREAM_TTL_KEY       string = "ttl"
+	VAVMS_STREAM_URL_KEY       string = "url"
+
+	VAVMS_PLAY_STATUS_LIVE string = "live"
+	VAVMS_PLAY_STATUS_BACK string = "back"
+
+	VAVMS_ACCESS_ADDR_UUID string = "uuid"
+
+	DATA_TYPE_AUDIO_VIDEO              string = "0"
+	DATA_TYPE_VIDEO                    string = "1"
+	DATA_TYPE_TWO_WAY_INTERCOM         string = "2"
+	DATA_TYPE_LISTEN                   string = "3"
+	DATA_TYPE_BROADCAST                string = "4"
+	DATA_TYPE_TRANSPARENT_TRANSMISSION string = "5"
 )
 
-func GetIDChannelKey(id, channel string) string {
-	return id + "_" + channel
+func GetIDChannel(args ...string) string {
+	return strings.Join(args, "_")
 }
 
 func Init(conf *conf.Conf) {
@@ -59,10 +75,6 @@ func UpdateStreamMedia(index string, new_stream_dedia *vcbase.StreamMedia) bool 
 	return rc.GetInstance().UpdateStreamMedia(VAVMS_STREAM_MEDIA, index, new_stream_dedia)
 }
 
-func SetVehicleChanStatus(id, channel, status string) error {
-	return rc.GetInstance().SetVehicleChan(GetIDChannelKey(id, channel), rc.KEY_STATUS, status)
-}
-
 func SetVehicleUUID(id, channel, uuid string) error {
-	return rc.GetInstance().SetVehicleChan(GetIDChannelKey(id, channel), rc.KEY_UUID, uuid)
+	return rc.GetInstance().SetVehicleChan(GetIDChannel(id, channel), VAVMS_ACCESS_ADDR_UUID, uuid)
 }

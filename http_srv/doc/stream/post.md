@@ -1,26 +1,42 @@
-# Request audio and video stream
+# Set stream class [live] or [back]
 
-Request audio and video stream
+Set stream class [live] or [back]
 
-**URL** : `/vavms/api/v1/stream/{sim}/{channel}`
+**URL** : `/vavms/api/v1/stream/{type}/{sim}/{channel}`
 
 **Method** : POST
 
 **Data constraints**
 
-**Data example** All fields must be sent
+json format sub keys `data_type` and `time_out`
 
-```json
-{ 
-	"type":"live/back",
-	"priority":0
+All fields must be sent
+
+`data_type` accept values
+
+0 stands for audio and video
+
+1 stands for video
+
+2 stands for two way intercom
+
+3 stands for listen
+
+4 stands for broadcast
+
+5 stans for tranparent transmission
+
+`time out` units second
+
+**Data example** 
+{
+	"data_type":"0"
+	"ttl":"1000"
 }
-```
+
 ## Success Response
 
-### live stream
-
-**Condition** : live stream already on
+**Condition** : 
 
 **Code** : `200 OK`
 
@@ -30,37 +46,10 @@ Request audio and video stream
 {
     "code":"0",
     "desc":"成功",
-    "data":{ 
-		"url":"rtmp://222.222.218.52:8080/myapp/id_channel"
+    "data":{
+	"ip":"222.222.218.52",
+	"port":"8876"
 	}
-}
-```
-### OR
-
-**Condition** : live stream not upload
-
-**Code** : `202 Accepted`
-
-**Content example** :
-
-```json 
-{
-    "code":"20200",
-    "desc":"请下发1078音视频指令",
-}
-```
-### OR
-
-**Condition** : 1078 alread sent please wait. 
-
-**Code** : `202 Accepted`
-
-**Content example** :
-
-```json 
-{
-    "code":"20201",
-    "desc":"1078音视频指令已下发,请等待",
 }
 ```
 ### OR
@@ -137,6 +126,34 @@ Request audio and video stream
 ```
 ### OR
 
+**Condition** : The fields are not 
+
+**Code** : `400 BAD REQUEST`
+
+**Content** : 
+
+```json
+{
+    "code":"40002",
+    "desc":"参数值非法(40002)"
+}
+```
+### OR 
+
+**Condition** : another stream media is show
+
+**Code** : `409 Conflict`
+
+**Content** : 
+
+```json
+{
+    "code":"40900",
+    "desc":"另外一个用户正在请求，请稍等(40900)"
+}
+```
+### OR
+
 **Condition** : panic
 
 **Code** : `500 INTERNAL SERVER ERROR`
@@ -149,4 +166,3 @@ Request audio and video stream
     "desc":"内部错误(50000)"
 }
 ```
-

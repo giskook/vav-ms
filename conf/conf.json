@@ -25,5 +25,8 @@
 		"t_read_time_out":"15s",
 		"t_idle_time_out":"60s",
 		"t_shut_wait_time_out":"10s"
+	}, 
+	"play":{
+		"play_lock_ttl":10
 	}
 }

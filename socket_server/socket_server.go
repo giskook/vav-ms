@@ -11,6 +11,7 @@ import (
 	"github.com/giskook/vav-ms/redis_cli"
 	"log"
 	"path"
+	"strconv"
 )
 
 type SocketServer struct {
@@ -18,35 +19,24 @@ type SocketServer struct {
 	conf   *conf.Conf
 }
 
-func (s *SocketServer) get_play_type(sim, channel string, info *vcbase.VavmsInfo) (int, string, string, error) {
-	var data_type, conn_play_type string
+func (s *SocketServer) get_play_type(info *vcbase.VavmsInfo) int {
 	play_type := 0
-
-	if info.Status == rc.STATUS_LIVE {
-		data_type = info.LiveType
-		conn_play_type = ss.CONN_PLAY_LIVE
-	} else if info.Status == rc.STATUS_BACK {
-		data_type = info.PlayBackType
-		conn_play_type = ss.CONN_PLAY_BACK
-	} else {
-		err := errors.New(fmt.Sprintf("sim %s chan %s redis [status] shuld set to [%s] or [%s] now is [%s]", sim, channel, rc.STATUS_LIVE, rc.STATUS_BACK, info.Status))
-		return 0, "", "", err
+	if info.DataType == redis_cli.DATA_TYPE_AUDIO_VIDEO {
+		play_type |= 3
+	}
+	if info.DataType == redis_cli.DATA_TYPE_VIDEO {
+		play_type |= 1
+	}
+	if info.DataType == redis_cli.DATA_TYPE_TWO_WAY_INTERCOM ||
+		info.DataType == redis_cli.DATA_TYPE_LISTEN {
+		play_type |= 2
 	}
 
-	if data_type == rc.DATA_TYPE_AUDIO_VIDEO ||
-		data_type == rc.DATA_TYPE_VIDEO {
-		play_type &= 1
-	}
-	if data_type == rc.DATA_TYPE_TWO_WAY_INTERCOM ||
-		data_type == rc.DATA_TYPE_LISTEN {
-		play_type &= 2
-	}
-
-	return play_type, conn_play_type, data_type, nil
+	return play_type
 }
 
 func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
-	vavms_info, err := rc.GetInstance().GetVavmsInfo(id, redis_cli.GetIDChannelKey(id, channel), s.conf.UUID, redis_cli.VAVMS_STREAM_MEDIA)
+	vavms_info, err := rc.GetInstance().GetVavmsInfo(id, channel, s.conf.UUID, redis_cli.VAVMS_STREAM_MEDIA)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
@@ -63,8 +53,8 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	// pipe path and open pipe
 	open_pipe := func(play_type, aname, vname string) (string, string, error) {
 		var pipe_a, pipe_v string
-		if play_type == rc.DATA_TYPE_AUDIO_VIDEO ||
-			play_type == rc.DATA_TYPE_VIDEO {
+		if play_type == redis_cli.DATA_TYPE_AUDIO_VIDEO ||
+			play_type == redis_cli.DATA_TYPE_VIDEO {
 			pipe_v = path.Join(s.conf.WorkSpace.PipePath, id, channel, vname)
 			err = vcbase.Mkfifo(pipe_v)
 			if err != nil {
@@ -78,10 +68,10 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 			}
 		}
 
-		if play_type == rc.DATA_TYPE_AUDIO_VIDEO ||
-			play_type == rc.DATA_TYPE_TWO_WAY_INTERCOM ||
-			play_type == rc.DATA_TYPE_LISTEN ||
-			play_type == rc.DATA_TYPE_BROADCAST {
+		if play_type == redis_cli.DATA_TYPE_AUDIO_VIDEO ||
+			play_type == redis_cli.DATA_TYPE_TWO_WAY_INTERCOM ||
+			play_type == redis_cli.DATA_TYPE_LISTEN ||
+			play_type == redis_cli.DATA_TYPE_BROADCAST {
 			pipe_a = path.Join(s.conf.WorkSpace.PipePath, id, channel, aname)
 			err = vcbase.Mkfifo(pipe_a)
 			if err != nil {
@@ -110,43 +100,54 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return ffmpeg_path, nil
 	}
 
-	play_type, conn_play_type, data_type, err := s.get_play_type(id, channel, vavms_info)
+	play_type := s.get_play_type(vavms_info)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
 	}
 
-	ffmpeg_path, err := ffmpeg_symbol("vffmpeg_" + id + "_" + channel + conn_play_type)
+	ffmpeg_path, err := ffmpeg_symbol("vffmpeg_" + redis_cli.GetIDChannel(id, channel, vavms_info.Status))
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
 	}
-	path_a, path_v, err := open_pipe(data_type, "a"+conn_play_type, "v"+conn_play_type)
+	path_a, path_v, err := open_pipe(vavms_info.DataType, "a"+vavms_info.Status, "v"+vavms_info.Status)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
 	}
 	var cmd string
+	url_inner := vavms_info.DomainInner + "/" + redis_cli.GetIDChannel(id, channel, vavms_info.Status)
+	url_outer := vavms_info.DomainOuter + "/" + redis_cli.GetIDChannel(id, channel, vavms_info.Status)
 	switch play_type {
 	case 3:
-		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsAV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.Acodec, path_a, vavms_info.DomainInner+"/"+redis_cli.GetIDChannelKey(id, channel))
+		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsAV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.Acodec, path_a, url_inner)
 		break
 	case 1:
-		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.DomainInner+"/"+redis_cli.GetIDChannelKey(id, channel))
+		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsV, ffmpeg_path, vavms_info.Vcodec, path_v, url_inner)
 	case 2:
-		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsA, ffmpeg_path, vavms_info.Acodec, path_a, vavms_info.DomainInner+"/"+redis_cli.GetIDChannelKey(id, channel))
+		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsA, ffmpeg_path, vavms_info.Acodec, path_a, url_inner)
 	}
 
-	c.SetProperty(id, channel, conn_play_type, cmd)
-	err = redis_cli.SetVehicleChanStatus(id, channel, rc.STATUS_INIT)
+	c.SetProperty(id, channel, vavms_info.Status, cmd)
+	result, err := redis_cli.StreamDestruct(redis_cli.GetIDChannel(id, channel, vavms_info.Status), redis_cli.VAVMS_ACCESS_ADDR_UUID, s.conf.UUID, redis_cli.VAVMS_STREAM_URL_KEY, url_outer, redis_cli.VAVMS_STREAM_TTL_KEY, redis_cli.GetIDChannel(id, channel, "status"))
 	if err != nil {
-		mybase.ErrorCheckPlus(err, id, channel)
+		mybase.ErrorCheckPlus(err, id, channel, vavms_info.Status)
 		return err
 	}
-	err = redis_cli.SetVehicleUUID(id, channel, s.conf.UUID)
+	if result != 0 {
+		e := errors.New(fmt.Sprintf("prepare destruct sim %s chan %s result %d", id, channel, result))
+		mybase.ErrorCheckPlus(e, id, channel, vavms_info.Status)
+		return e
+	}
+
+	seconds, err := redis_cli.StreamGetTTL(redis_cli.GetIDChannel(id, channel, vavms_info.Status))
 	if err != nil {
-		mybase.ErrorCheckPlus(err, id, channel)
-		return err
+		log.Println("prepare info set time error, stream will use default ttl")
+	}
+	ttl, err := strconv.Atoi(seconds)
+	if err == nil && ttl > 0 {
+		c.SetReadDeadline(ttl)
 	}
 
 	return nil
