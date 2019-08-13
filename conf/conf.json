@@ -27,6 +27,11 @@
 		"t_shut_wait_time_out":"10s"
 	}, 
 	"play":{
-		"play_lock_ttl":10
+		"play_lock_ttl":200
+	},
+	"debug":{
+		"debug":true,
+		"dest_id":"01334516771", 
+		"record_file_a":false
 	}
 }

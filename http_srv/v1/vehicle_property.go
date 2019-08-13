@@ -5,14 +5,17 @@ import (
 	gkbase "github.com/giskook/go/base"
 	gkhttp "github.com/giskook/go/http"
 	"github.com/giskook/vav-ms/base"
+	"github.com/giskook/vav-ms/conf"
 	"github.com/giskook/vav-ms/redis_cli"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 type vehicle_property struct {
-	AudioFormat string `json:"audio_format"`
-	VideoFormat string `json:"video_format"`
+	AudioFormat       string `json:"audio_format"`
+	AudioSamplingRate string `json:"audio_sampling_rate"`
+	VideoFormat       string `json:"video_format"`
 }
 
 func vehicle_property_post(w http.ResponseWriter, r *http.Request) (int, string, error) {
@@ -28,12 +31,45 @@ func vehicle_property_post(w http.ResponseWriter, r *http.Request) (int, string,
 		return http.StatusBadRequest, base.HTTP_BAD_REQUEST_DECODE, err
 	}
 	if vp.AudioFormat == "" ||
-		vp.VideoFormat == "" {
+		vp.VideoFormat == "" ||
+		vp.AudioSamplingRate == "" {
 		gkbase.ErrorCheck(base.ERROR_BAD_REQUEST_MISSING)
 		return http.StatusBadRequest, base.HTTP_BAD_REQUEST_MISSING, base.ERROR_BAD_REQUEST_MISSING
 	}
 
-	err = redis_cli.SetVehicleProperty(sim, vp.AudioFormat, vp.VideoFormat)
+	// convert to ffmpeg supports formts
+	audio_format_index, err1 := strconv.Atoi(vp.AudioFormat)
+	video_format_index, err2 := strconv.Atoi(vp.VideoFormat)
+	audio_sampling_rate_index, err3 := strconv.Atoi(vp.AudioSamplingRate)
+	if err1 != nil || err2 != nil || err3 != nil {
+		gkbase.ErrorCheck(base.ERROR_BAD_REQUEST_MISSING)
+		return http.StatusBadRequest, base.HTTP_BAD_REQUEST_MISSING, base.ERROR_BAD_REQUEST_MISSING
+	}
+	audio_format, err := conf.GetInstance().CheckFormat(audio_format_index)
+	if err != nil {
+		gkbase.ErrorCheck(base.ERROR_BAD_REQUEST_MISSING)
+		if err == base.ERROR_BAD_REQUEST_ASSETS_OVER_RANGE {
+			return http.StatusBadRequest, base.HTTP_BAD_REQUEST_ASSETS_OVER_RANGE, err
+		}
+		return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR_FORMATS_NOT_SUPPORT, err
+	}
+
+	video_format, err := conf.GetInstance().CheckFormat(video_format_index)
+	if err != nil {
+		gkbase.ErrorCheck(base.ERROR_BAD_REQUEST_MISSING)
+		if err == base.ERROR_BAD_REQUEST_ASSETS_OVER_RANGE {
+			return http.StatusBadRequest, base.HTTP_BAD_REQUEST_ASSETS_OVER_RANGE, err
+		}
+		return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR_FORMATS_NOT_SUPPORT, err
+	}
+
+	sampling_rate, err := conf.GetInstance().CheckSamplingRate(audio_sampling_rate_index)
+	if err != nil {
+		gkbase.ErrorCheck(base.ERROR_BAD_REQUEST_MISSING)
+		return http.StatusBadRequest, base.HTTP_BAD_REQUEST_ASSETS_OVER_RANGE, err
+	}
+
+	err = redis_cli.SetVehicleProperty(sim, audio_format, video_format, sampling_rate)
 	if err != nil {
 		gkbase.ErrorCheck(err)
 		return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR_SET_VEHICLE_PROPERTY, err

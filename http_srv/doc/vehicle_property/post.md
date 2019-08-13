@@ -10,12 +10,15 @@ Create vehicle audio and vedia properties
 
 All fields must be sent
 
+Filed audio format / audio sampling rate and vedio format is the index.The meaning is 1079 0x1003's content.
+
 **Data example** 
 
 ```json
 { 
-	"audio_format":"g726",
-	"vedio_format":"h264"
+	"audio_format":"6",
+	"audio_sampling_rate":"0"
+	"vedio_format":"98",
 }
 ```
 ## Success Response
@@ -62,7 +65,35 @@ All fields must be sent
     "desc":"缺少参数(40001)"
 }
 ```
+### OR
 
+**Condition** : The fileds are over ranged
+
+**Code** : `400 BAD REQUEST`
+
+**Content** : 
+
+```json
+{
+    "code":"40003",
+    "desc":"音视频编码方式或音频采样率超出支持范围(40003)"
+}
+```
+
+### OR
+
+**Condition** : The audio or video formats are not supported
+
+**Code** : `500 INTERNAL SERVER ERROR`
+
+**Content** : 
+
+```json
+{
+    "code":"50008",
+    "desc":"暂不支持该格式，请联系对接(50008)"
+}
+```
 ### OR
 
 **Condition** : access addr not add to redis

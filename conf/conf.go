@@ -55,13 +55,22 @@ type play_cnf struct {
 	PlayLockTTL int `json:"play_lock_ttl"`
 }
 
+type debug_cnf struct {
+	Debug       bool   `json:"debug"`
+	DestID      string `json:"dest_id"`
+	RecordFileA bool   `json:"record_file_a"`
+}
+
 type Conf struct {
-	UUID      string         `json:"uuid"`
-	TCP       *tcp_srv_cnf   `json:"tcp"`
-	Redis     *redis_cnf     `json:"redis"`
-	WorkSpace *workspace_cnf `json:"work_space"`
-	Http      *http_cnf      `json:"http"`
-	Play      *play_cnf      `json:"play"`
+	UUID          string         `json:"uuid"`
+	TCP           *tcp_srv_cnf   `json:"tcp"`
+	Redis         *redis_cnf     `json:"redis"`
+	WorkSpace     *workspace_cnf `json:"work_space"`
+	Http          *http_cnf      `json:"http"`
+	Play          *play_cnf      `json:"play"`
+	Debug         *debug_cnf     `json:"debug"`
+	Formats       []string
+	SamplingRates []string
 }
 
 var instance Conf
@@ -70,6 +79,7 @@ var once sync.Once
 func GetInstance() *Conf {
 	once.Do(func() {
 		file, _ := os.Open(CONF_FILE)
+		defer file.Close()
 		decoder := json.NewDecoder(file)
 		err := decoder.Decode(&instance)
 		error_check(err)
@@ -89,6 +99,14 @@ func GetInstance() *Conf {
 		error_check(err)
 		instance.Http.ShutWaitTimeOut, err = time.ParseDuration(instance.Http.TShutWaitTimeOut)
 		error_check(err)
+
+		formats, err := read_format_file()
+		error_check(err)
+		instance.Formats = formats
+
+		sampling_rate, err := read_sampling_rate_file()
+		error_check(err)
+		instance.SamplingRates = sampling_rate
 	})
 
 	return &instance

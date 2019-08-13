@@ -121,15 +121,15 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	url_outer := vavms_info.DomainOuter + "/" + redis_cli.GetIDChannel(id, channel, vavms_info.Status)
 	switch play_type {
 	case 3:
-		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsAV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.Acodec, path_a, url_inner)
+		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsAV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner)
 		break
 	case 1:
 		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsV, ffmpeg_path, vavms_info.Vcodec, path_v, url_inner)
 	case 2:
-		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsA, ffmpeg_path, vavms_info.Acodec, path_a, url_inner)
+		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsA, ffmpeg_path, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner)
 	}
 
-	c.SetProperty(id, channel, vavms_info.Status, cmd)
+	c.SetProperty(id, channel, vavms_info.Status, cmd, path_a, path_v, vavms_info.Acodec, vavms_info.Vcodec)
 	result, err := redis_cli.StreamDestruct(redis_cli.GetIDChannel(id, channel, vavms_info.Status), redis_cli.VAVMS_ACCESS_ADDR_UUID, s.conf.UUID, redis_cli.VAVMS_STREAM_URL_KEY, url_outer, redis_cli.VAVMS_STREAM_TTL_KEY, redis_cli.GetIDChannel(id, channel, "status"))
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel, vavms_info.Status)
@@ -165,6 +165,11 @@ func NewSocketServer(conf *conf.Conf) *SocketServer {
 		TcpAddr:          conf.TCP.Addr,
 		ServerType:       ss.SERVER_TYPE_VAVMS,
 		DefaultReadLimit: conf.TCP.DefaultReadLimit,
+		Debug: &ss.DebugCnf{
+			Debug:       conf.Debug.Debug,
+			DestID:      conf.Debug.DestID,
+			RecordFileA: conf.Debug.RecordFileA,
+		},
 	}
 
 	server.server = ss.NewSocketServer(cnf, server)
