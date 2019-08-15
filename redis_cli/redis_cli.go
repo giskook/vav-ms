@@ -18,13 +18,6 @@ const (
 	VAVMS_PLAY_STATUS_BACK string = "back"
 
 	VAVMS_ACCESS_ADDR_UUID string = "uuid"
-
-	DATA_TYPE_AUDIO_VIDEO              string = "0"
-	DATA_TYPE_VIDEO                    string = "1"
-	DATA_TYPE_TWO_WAY_INTERCOM         string = "2"
-	DATA_TYPE_LISTEN                   string = "3"
-	DATA_TYPE_BROADCAST                string = "4"
-	DATA_TYPE_TRANSPARENT_TRANSMISSION string = "5"
 )
 
 func GetIDChannel(args ...string) string {
@@ -77,4 +70,8 @@ func UpdateStreamMedia(index string, new_stream_dedia *vcbase.StreamMedia) bool 
 
 func SetVehicleUUID(id, channel, uuid string) error {
 	return rc.GetInstance().SetVehicleChan(GetIDChannel(id, channel), VAVMS_ACCESS_ADDR_UUID, uuid)
+}
+
+func SetPlayLock(key, status, ttl string) (int, error) {
+	return rc.GetInstance().SetPlayLock(key, status, ttl)
 }

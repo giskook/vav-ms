@@ -21,14 +21,14 @@ type SocketServer struct {
 
 func (s *SocketServer) get_play_type(info *vcbase.VavmsInfo) int {
 	play_type := 0
-	if info.DataType == redis_cli.DATA_TYPE_AUDIO_VIDEO {
+	if info.DataType == rc.DATA_TYPE_AUDIO_VIDEO {
 		play_type |= 3
 	}
-	if info.DataType == redis_cli.DATA_TYPE_VIDEO {
+	if info.DataType == rc.DATA_TYPE_VIDEO {
 		play_type |= 1
 	}
-	if info.DataType == redis_cli.DATA_TYPE_TWO_WAY_INTERCOM ||
-		info.DataType == redis_cli.DATA_TYPE_LISTEN {
+	if info.DataType == rc.DATA_TYPE_TWO_WAY_INTERCOM ||
+		info.DataType == rc.DATA_TYPE_LISTEN {
 		play_type |= 2
 	}
 
@@ -53,8 +53,8 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	// pipe path and open pipe
 	open_pipe := func(play_type, aname, vname string) (string, string, error) {
 		var pipe_a, pipe_v string
-		if play_type == redis_cli.DATA_TYPE_AUDIO_VIDEO ||
-			play_type == redis_cli.DATA_TYPE_VIDEO {
+		if play_type == rc.DATA_TYPE_AUDIO_VIDEO ||
+			play_type == rc.DATA_TYPE_VIDEO {
 			pipe_v = path.Join(s.conf.WorkSpace.PipePath, id, channel, vname)
 			err = vcbase.Mkfifo(pipe_v)
 			if err != nil {
@@ -68,10 +68,10 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 			}
 		}
 
-		if play_type == redis_cli.DATA_TYPE_AUDIO_VIDEO ||
-			play_type == redis_cli.DATA_TYPE_TWO_WAY_INTERCOM ||
-			play_type == redis_cli.DATA_TYPE_LISTEN ||
-			play_type == redis_cli.DATA_TYPE_BROADCAST {
+		if play_type == rc.DATA_TYPE_AUDIO_VIDEO ||
+			play_type == rc.DATA_TYPE_TWO_WAY_INTERCOM ||
+			play_type == rc.DATA_TYPE_LISTEN ||
+			play_type == rc.DATA_TYPE_BROADCAST {
 			pipe_a = path.Join(s.conf.WorkSpace.PipePath, id, channel, aname)
 			err = vcbase.Mkfifo(pipe_a)
 			if err != nil {
