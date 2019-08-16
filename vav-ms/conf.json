@@ -9,7 +9,7 @@
 		"passwd":"redis",
 		"max_idle":100,
 		"t_conn_time_out":"30s",
-		"t_read_time_out":"31s",
+		"t_read_time_out":"1m10s",
 		"t_write_time_out":"32s" 
 	},
 	"work_space":{
