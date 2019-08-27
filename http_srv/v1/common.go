@@ -11,8 +11,9 @@ func common_reply(w http.ResponseWriter, http_status int, code string, data inte
 	err_msg := ""
 	if err != nil {
 		err_msg = err.Error()
-	} else {
-		err_msg = base.ErrorMap[code]
+	}
+	if code != "" {
+		err_msg += base.ErrorMap[code]
 	}
 	gkhttp.EncodeResponse(w, code, data, err_msg)
 }
