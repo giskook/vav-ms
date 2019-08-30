@@ -28,7 +28,7 @@
 		"t_shut_wait_time_out":"10s"
 	}, 
 	"play":{
-		"play_lock_ttl":200
+		"play_lock_ttl":60
 	},
 	"debug":{
 		"debug":true,

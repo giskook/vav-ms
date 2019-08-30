@@ -2,7 +2,7 @@
 
 Create vehicle audio and vedia properties
 
-**URL** : `/vavms/api/v1/vehicle_property`
+**URL** : `/vavms/api/v1/vehicle_property/{sim}`
 
 **Method** : POST
 
@@ -18,7 +18,7 @@ Filed audio format / audio sampling rate and vedio format is the index.The meani
 { 
 	"audio_format":"6",
 	"audio_sampling_rate":"0"
-	"vedio_format":"98",
+	"video_format":"98",
 }
 ```
 ## Success Response

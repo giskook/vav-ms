@@ -55,8 +55,7 @@ func AccessAddr(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if x := recover(); x != nil {
 			gkbase.ErrorPrintStack()
-			w.WriteHeader(http.StatusInternalServerError)
-			gkhttp.EncodeResponse(w, base.HTTP_INTERNAL_SERVER_ERROR, nil, "")
+			common_reply(w, http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR, nil, nil)
 		}
 	}()
 	gkhttp.RecordReq(r)
