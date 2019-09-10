@@ -62,7 +62,7 @@ All fields must be sent
 
 ```json 
 {
-    "code":"20202",
+    "code":"20200",
     "desc":"车机音视频格式未设置",
 }
 ```
@@ -90,7 +90,7 @@ All fields must be sent
 
 ```json 
 {
-    "code":"20204",
+    "code":"20202",
     "desc":"流媒体地址未设置",
 }
 ```
