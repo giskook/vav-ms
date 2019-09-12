@@ -12,6 +12,7 @@ import (
 	"log"
 	"path"
 	"strconv"
+	"strings"
 )
 
 type SocketServer struct {
@@ -117,8 +118,8 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return err
 	}
 	var cmd string
-	url_inner := vavms_info.DomainInner + "/" + redis_cli.GetIDChannel(id, channel, vavms_info.Status)
-	url_outer := vavms_info.DomainOuter + "/" + redis_cli.GetIDChannel(id, channel, vavms_info.Status)
+	url_inner := strings.Trim(vavms_info.DomainInner, "/") + "/" + redis_cli.GetIDChannel(id, channel, vavms_info.Status)
+	url_outer := strings.Trim(vavms_info.DomainOuter, "/") + "/" + redis_cli.GetIDChannel(id, channel, vavms_info.Status)
 	switch play_type {
 	case 3:
 		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsAV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner)
