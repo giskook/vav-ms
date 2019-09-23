@@ -59,6 +59,14 @@ func StreamDestruct(key, key_uuid, uuid, key_url, url, key_ttl, status string) (
 	return rc.GetInstance().DoScript(SCRIPT_DESTRUCT, key, key_uuid, uuid, key_url, url, key_ttl, status)
 }
 
+func StreamDelUrl(key string) error {
+	return rc.GetInstance().DelKey(key)
+}
+
+func StreamExistUrl(key string) (int, error) {
+	return rc.GetInstance().ExistKey(key)
+}
+
 func StreamGetTTL(key string) (string, error) {
 	return rc.GetInstance().GetVehicleChan(key, VAVMS_STREAM_TTL_KEY)
 }

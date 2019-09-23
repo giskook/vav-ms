@@ -155,6 +155,10 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 }
 
 func (s *SocketServer) OnClose(conn *ss.Connection) error {
+	err := redis_cli.StreamDelUrl(redis_cli.GetIDChannel(conn.SIM, conn.Channel, conn.PlayType))
+	if err != nil {
+		mybase.ErrorCheckPlus(err, conn.SIM, conn.Channel, conn.PlayType)
+	}
 	return nil
 }
 

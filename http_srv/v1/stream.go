@@ -128,6 +128,22 @@ func stream_post(w http.ResponseWriter, r *http.Request) (int, string, interface
 	if err3 != nil {
 		return http.StatusAccepted, base.HTTP_ACCEPTED_AV_STREAM_MEDIA_NOT_SET, nil, nil
 	}
+	if stream_type == STREAM_TYPE_LIVE {
+		// deal with re conn
+		url, _ := redis_cli.StreamPlayURL(redis_cli.GetIDChannel(sim, channel, stream_type))
+		if url != "" {
+			return http.StatusOK, base.HTTP_OK_URL_ALREADY_EXIST, url, nil
+		}
+	} else {
+		exists, err := redis_cli.StreamExistUrl(redis_cli.GetIDChannel(sim, channel, stream_type))
+		if err != nil {
+			gkbase.ErrorCheckPlus(err, sim, channel, stream_type)
+			return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR, nil, nil
+		}
+		if exists == 1 {
+			return http.StatusOK, base.HTTP_OK_BACK_URL_ALREADY_EXIST, nil, nil
+		}
+	}
 
 	result, err := redis_cli.SetPlayLock(redis_cli.GetIDChannel(sim, channel, "status"), stream_type, strconv.Itoa(conf.GetInstance().Play.PlayLockTTL))
 	if err != nil {

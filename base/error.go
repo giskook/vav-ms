@@ -2,6 +2,8 @@ package base
 
 const (
 	HTTP_OK                                         string = "0"
+	HTTP_OK_URL_ALREADY_EXIST                       string = "20000"
+	HTTP_OK_BACK_URL_ALREADY_EXIST                  string = "20001"
 	HTTP_ACCEPTED_AV_FORMAT_NOT_SET                 string = "20200"
 	HTTP_ACCEPTED_AV_ACCESS_ADDR_NOT_SET            string = "20201"
 	HTTP_ACCEPTED_AV_STREAM_MEDIA_NOT_SET           string = "20202"
@@ -24,7 +26,9 @@ const (
 )
 
 var ErrorMap map[string]string = map[string]string{
-	HTTP_OK: "成功",
+	HTTP_OK:                        "成功",
+	HTTP_OK_URL_ALREADY_EXIST:      "url已存在",
+	HTTP_OK_BACK_URL_ALREADY_EXIST: "另外一个用户正在观看，请等待",
 
 	HTTP_ACCEPTED_AV_FORMAT_NOT_SET:                 "车机音视频格式未设置",
 	HTTP_ACCEPTED_AV_ACCESS_ADDR_NOT_SET:            "车机接入地址未设置",

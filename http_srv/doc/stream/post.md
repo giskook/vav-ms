@@ -54,6 +54,33 @@ All fields must be sent
 ```
 ### OR
 
+**Condition** : url already exists only for the live
+
+**Code** : `200 Accepted`
+
+**Content example** :
+
+```json 
+{
+    "code":"20000",
+    "desc":"url已存在",
+    "data":"rtmp://222.222.218.52:8888/myapp/13731143001_1_live"
+}
+```
+### OR
+**Condition** : url already exists only for the back 
+
+**Code** : `200 Accepted`
+
+**Content example** :
+
+```json 
+{
+    "code":"20001",
+    "desc":"另外一个用户正在观看，请等待",
+}
+```
+### OR
 **Condition** : vehicle's audio format and video format are not configured
 
 **Code** : `202 Accepted`
