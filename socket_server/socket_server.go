@@ -20,6 +20,13 @@ type SocketServer struct {
 	conf   *conf.Conf
 }
 
+func (s *SocketServer) OnFfmpegExit(conn *ss.Connection) error {
+	redis_cli.StreamDelUrl(redis_cli.GetIDChannel(conn.SIM, conn.Channel, conn.PlayType))
+	conn.Close()
+
+	return nil
+}
+
 func (s *SocketServer) get_play_type(info *vcbase.VavmsInfo) int {
 	play_type := 0
 	if info.DataType == rc.DATA_TYPE_AUDIO_VIDEO {
@@ -130,7 +137,6 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsA, ffmpeg_path, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner)
 	}
 
-	c.SetProperty(id, channel, vavms_info.Status, cmd, path_a, path_v, vavms_info.Acodec, vavms_info.Vcodec)
 	result, err := redis_cli.StreamDestruct(redis_cli.GetIDChannel(id, channel, vavms_info.Status), redis_cli.VAVMS_ACCESS_ADDR_UUID, s.conf.UUID, redis_cli.VAVMS_STREAM_URL_KEY, url_outer, redis_cli.VAVMS_STREAM_TTL_KEY, redis_cli.GetIDChannel(id, channel, "status"))
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel, vavms_info.Status)
@@ -144,12 +150,13 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 
 	seconds, err := redis_cli.StreamGetTTL(redis_cli.GetIDChannel(id, channel, vavms_info.Status))
 	if err != nil {
-		log.Println("prepare info set time error, stream will use default ttl")
+		log.Println("prepare info set time error, stream will use default ttl 500")
 	}
 	ttl, err := strconv.Atoi(seconds)
-	if err == nil && ttl > 0 {
-		c.SetReadDeadline(ttl)
+	if err != nil {
+		ttl = 500
 	}
+	c.SetProperty(id, channel, vavms_info.Status, cmd, path_a, path_v, vavms_info.Acodec, vavms_info.Vcodec, ttl)
 
 	return nil
 }

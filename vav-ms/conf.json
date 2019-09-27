@@ -2,7 +2,7 @@
 	"uuid":"vavms1",
 	"tcp":{
 		"addr":":8875",
-		"t_default_read_limit":"2m"
+		"t_default_read_limit":"30s"
 	},
 	"redis":{
 		"addr":"127.0.0.1:6379",
@@ -31,8 +31,8 @@
 		"play_lock_ttl":60
 	},
 	"debug":{
-		"debug":true,
-		"dest_id":"01334516771", 
+		"debug":false,
+		"dest_id":"13731143001", 
 		"record_file_a":true
 	}
 }
