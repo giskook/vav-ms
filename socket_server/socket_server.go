@@ -135,6 +135,8 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsV, ffmpeg_path, vavms_info.Vcodec, path_v, url_inner)
 	case 2:
 		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsA, ffmpeg_path, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner)
+	default:
+		return errors.New("not support")
 	}
 
 	result, err := redis_cli.StreamDestruct(redis_cli.GetIDChannel(id, channel, vavms_info.Status), redis_cli.VAVMS_ACCESS_ADDR_UUID, s.conf.UUID, redis_cli.VAVMS_STREAM_URL_KEY, url_outer, redis_cli.VAVMS_STREAM_TTL_KEY, redis_cli.GetIDChannel(id, channel, "status"))
@@ -156,7 +158,7 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	if err != nil {
 		ttl = 500
 	}
-	c.SetProperty(id, channel, vavms_info.Status, cmd, path_a, path_v, vavms_info.Acodec, vavms_info.Vcodec, ttl)
+	c.SetProperty(id, channel, vavms_info.Status, cmd, path_a, path_v, vavms_info.Acodec, vavms_info.Vcodec, ttl, play_type)
 
 	return nil
 }
