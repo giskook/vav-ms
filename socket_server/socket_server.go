@@ -12,7 +12,10 @@ import (
 	"log"
 	"path"
 	"strconv"
-	"strings"
+)
+
+const (
+	RTMP_FORMATER string = "rtmp://%s:%s/%s/%s"
 )
 
 type SocketServer struct {
@@ -51,7 +54,7 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	}
 	if vavms_info.Acodec == "" ||
 		vavms_info.Vcodec == "" ||
-		vavms_info.DomainInner == "" {
+		vavms_info.StreamMedia == nil {
 		e := errors.New("redis not configured")
 		log.Println(vavms_info)
 		mybase.ErrorCheckPlus(e, id, channel)
@@ -125,8 +128,8 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return err
 	}
 	var cmd string
-	url_inner := strings.Trim(vavms_info.DomainInner, "/") + "/" + redis_cli.GetIDChannel(id, channel, vavms_info.Status)
-	url_outer := strings.Trim(vavms_info.DomainOuter, "/") + "/" + redis_cli.GetIDChannel(id, channel, vavms_info.Status)
+	url_inner := fmt.Sprintf(RTMP_FORMATER, vavms_info.StreamMedia.RtmpIpInner, vavms_info.StreamMedia.RtmpPortInner, vavms_info.StreamMedia.RtmpApplication, redis_cli.GetIDChannel(id, channel, vavms_info.Status))
+	url_outer := fmt.Sprintf(RTMP_FORMATER, vavms_info.StreamMedia.RtmpIpOutter, vavms_info.StreamMedia.RtmpPortOutter, vavms_info.StreamMedia.RtmpApplication, redis_cli.GetIDChannel(id, channel, vavms_info.Status))
 	switch play_type {
 	case 3:
 		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsAV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner)
@@ -139,7 +142,16 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return errors.New("not support")
 	}
 
-	result, err := redis_cli.StreamDestruct(redis_cli.GetIDChannel(id, channel, vavms_info.Status), redis_cli.VAVMS_ACCESS_ADDR_UUID, s.conf.UUID, redis_cli.VAVMS_STREAM_URL_KEY, url_outer, redis_cli.VAVMS_STREAM_TTL_KEY, redis_cli.GetIDChannel(id, channel, "status"))
+	result, err := redis_cli.StreamDestruct(redis_cli.GetIDChannel(id, channel, vavms_info.Status),
+		redis_cli.VAVMS_ACCESS_ADDR_UUID, s.conf.UUID,
+		redis_cli.VAVMS_STREAM_URL_KEY, url_outer,
+		redis_cli.HTTP_IP_OUTTER, vavms_info.StreamMedia.HttpIpOutter,
+		redis_cli.HTTP_PORT_OUTTER, vavms_info.StreamMedia.HttpPortOutter,
+		redis_cli.HTTP_LOCATION, vavms_info.StreamMedia.HttpLocation,
+		redis_cli.RTMP_INNER_PORT, vavms_info.StreamMedia.RtmpPortInner,
+		redis_cli.RTMP_APPLICATION, vavms_info.StreamMedia.RtmpApplication,
+		redis_cli.VAVMS_STREAM_TTL_KEY,
+		redis_cli.GetIDChannel(id, channel, "status"))
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel, vavms_info.Status)
 		return err

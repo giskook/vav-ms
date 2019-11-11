@@ -14,10 +14,9 @@ Create stream media for vavms
 { 
 	"stream_medias":
 		[
-		{"access_uuid":"vavms1","domain_inner":"rtmp://127.0.0.1:8080/myapp","domain_outer":"rtmp://222.222.218.52:8080/myapp" },
-		{"access_uuid":"vavms1","domain_inner":"rtmp://127.0.0.1:8080/myapp","domain_outer":"rtmp://222.222.218.53:8080/myapp" }
+		{"access_uuid":"vavms1","rtmp_application":"myapp","rtmp_ip_inner":"127.0.0.1", "rtmp_ip_outer":"222.222.218.52", "rtmp_port_inner":"8080", "rtmp_port_outter":"8023","http_location":"live", "http_ip_outer":"222.222.218.51", "http_port_outter":"9002" }
 		]
-}
+ }
 ```
 ## Success Response
 

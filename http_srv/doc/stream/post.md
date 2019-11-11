@@ -28,10 +28,14 @@ All fields must be sent
 
 `time out` units second
 
+`priority` 如果是监管传入>=100的值,如非传入0-100
+
 **Data example** 
 {
-	"data_type":"0"
-	"ttl":"1000"
+	"data_type":"0",
+	"ttl":"1000",
+	"priority":"101",
+	"number":"冀AD8V52"
 }
 
 ## Success Response

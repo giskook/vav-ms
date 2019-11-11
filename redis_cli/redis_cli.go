@@ -18,6 +18,14 @@ const (
 	VAVMS_PLAY_STATUS_BACK string = "back"
 
 	VAVMS_ACCESS_ADDR_UUID string = "uuid"
+
+	HTTP_IP_OUTTER   string = "http_ip_outter"
+	HTTP_PORT_OUTTER string = "http_port_outter"
+	HTTP_LOCATION    string = "http_location"
+	RTMP_INNER_PORT  string = "rtmp_port_outter"
+	RTMP_APPLICATION string = "rtmp_application"
+
+	STREAM_PRIORITY_KEY string = "priority"
 )
 
 func GetIDChannel(args ...string) string {
@@ -74,4 +82,8 @@ func SetVehicleUUID(id, channel, uuid string) error {
 
 func SetPlayLock(key, status, ttl string) (int, error) {
 	return rc.GetInstance().SetPlayLock(key, status, ttl)
+}
+
+func AddKey(key, value string) error {
+	return rc.GetInstance().AddKey(key, value)
 }

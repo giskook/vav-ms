@@ -37,7 +37,15 @@ func stream_media_post(w http.ResponseWriter, r *http.Request) (int, string, err
 	}
 
 	for _, v := range stream_medias.StreamMedias {
-		if v.AccessUUID == "" || v.DomainInner == "" || v.DomainOuter == "" {
+		if v.AccessUUID == "" ||
+			v.RtmpApplication == "" ||
+			v.RtmpIpInner == "" ||
+			v.RtmpIpOutter == "" ||
+			v.RtmpPortInner == "" ||
+			v.RtmpPortOutter == "" ||
+			v.HttpLocation == "" ||
+			v.HttpIpOutter == "" ||
+			v.HttpPortOutter == "" {
 			gkbase.ErrorCheck(base.ERROR_BAD_REQUEST_MISSING)
 			return http.StatusBadRequest, base.HTTP_BAD_REQUEST_MISSING, base.ERROR_BAD_REQUEST_MISSING
 		}
@@ -75,7 +83,15 @@ func stream_media_put(w http.ResponseWriter, r *http.Request) (int, string, erro
 		gkbase.ErrorCheck(err)
 		return http.StatusBadRequest, base.HTTP_BAD_REQUEST_DECODE, err
 	}
-	if stream_media.AccessUUID == "" || stream_media.DomainInner == "" || stream_media.DomainOuter == "" {
+	if stream_media.AccessUUID == "" ||
+		stream_media.RtmpApplication == "" ||
+		stream_media.RtmpIpInner == "" ||
+		stream_media.RtmpIpOutter == "" ||
+		stream_media.RtmpPortInner == "" ||
+		stream_media.RtmpPortOutter == "" ||
+		stream_media.HttpLocation == "" ||
+		stream_media.HttpIpOutter == "" ||
+		stream_media.HttpPortOutter == "" {
 		gkbase.ErrorCheck(base.ERROR_BAD_REQUEST_MISSING)
 		return http.StatusBadRequest, base.HTTP_BAD_REQUEST_MISSING, base.ERROR_BAD_REQUEST_MISSING
 	}
