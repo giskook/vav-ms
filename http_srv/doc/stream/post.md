@@ -26,16 +26,21 @@ All fields must be sent
 
 5 stans for tranparent transmission
 
-`time out` units second
+`ttl` units second
+
+`number` 车牌号码
 
 `priority` 如果是监管传入>=100的值,如非传入0-100
+
+`token` 监管请求视频需要设置
 
 **Data example** 
 {
 	"data_type":"0",
 	"ttl":"1000",
 	"priority":"101",
-	"number":"冀AD8V52"
+	"number":"冀AD8V52",
+	"token":"ddxdbgda1"
 }
 
 ## Success Response

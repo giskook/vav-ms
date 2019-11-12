@@ -30,6 +30,7 @@ type stream struct {
 	TTL      string `json:"ttl"`
 	Priority string `json:"priority"` // for supervision the value >= 100
 	Number   string `json:"number"`
+	Token    string `json:"token"`
 }
 
 func stream_condition(sim string) (error, error, error) {
@@ -122,7 +123,10 @@ func stream_post(w http.ResponseWriter, r *http.Request) (int, string, interface
 	stream_type := vars["type"]
 	sim := vars["sim"]
 	channel := vars["channel"]
-	redis_cli.AddKey(url.QueryEscape(stream.Number), sim)
+	go func() { redis_cli.AddKey(url.QueryEscape(stream.Number), sim) }()
+	if stream.Token != "" {
+		go func() { redis_cli.AddKey(redis_cli.VAVMS_TOKEN, stream.Token) }()
+	}
 
 	err1, err2, err3 := stream_condition(sim)
 	if err1 != nil {

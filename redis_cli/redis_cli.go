@@ -26,6 +26,8 @@ const (
 	RTMP_APPLICATION string = "rtmp_application"
 
 	STREAM_PRIORITY_KEY string = "priority"
+
+	VAVMS_TOKEN = "vavms_token"
 )
 
 func GetIDChannel(args ...string) string {
