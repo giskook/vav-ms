@@ -18,16 +18,6 @@ const (
 	VAVMS_PLAY_STATUS_BACK string = "back"
 
 	VAVMS_ACCESS_ADDR_UUID string = "uuid"
-
-	HTTP_IP_OUTTER   string = "http_ip_outter"
-	HTTP_PORT_OUTTER string = "http_port_outter"
-	HTTP_LOCATION    string = "http_location"
-	RTMP_INNER_PORT  string = "rtmp_port_outter"
-	RTMP_APPLICATION string = "rtmp_application"
-
-	STREAM_PRIORITY_KEY string = "priority"
-
-	VAVMS_TOKEN = "vavms_token"
 )
 
 func GetIDChannel(args ...string) string {

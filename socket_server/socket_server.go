@@ -145,11 +145,11 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	result, err := redis_cli.StreamDestruct(redis_cli.GetIDChannel(id, channel, vavms_info.Status),
 		redis_cli.VAVMS_ACCESS_ADDR_UUID, s.conf.UUID,
 		redis_cli.VAVMS_STREAM_URL_KEY, url_outer,
-		redis_cli.HTTP_IP_OUTTER, vavms_info.StreamMedia.HttpIpOutter,
-		redis_cli.HTTP_PORT_OUTTER, vavms_info.StreamMedia.HttpPortOutter,
-		redis_cli.HTTP_LOCATION, vavms_info.StreamMedia.HttpLocation,
-		redis_cli.RTMP_INNER_PORT, vavms_info.StreamMedia.RtmpPortInner,
-		redis_cli.RTMP_APPLICATION, vavms_info.StreamMedia.RtmpApplication,
+		rc.HTTP_IP_OUTTER, vavms_info.StreamMedia.HttpIpOutter,
+		rc.HTTP_PORT_OUTTER, vavms_info.StreamMedia.HttpPortOutter,
+		rc.HTTP_LOCATION, vavms_info.StreamMedia.HttpLocation,
+		rc.RTMP_INNER_PORT, vavms_info.StreamMedia.RtmpPortInner,
+		rc.RTMP_APPLICATION, vavms_info.StreamMedia.RtmpApplication,
 		redis_cli.VAVMS_STREAM_TTL_KEY,
 		redis_cli.GetIDChannel(id, channel, "status"))
 	if err != nil {

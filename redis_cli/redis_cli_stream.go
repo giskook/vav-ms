@@ -116,5 +116,5 @@ func StreamReplacePriority(key, priority_key, priority string) (int, error) {
 }
 
 func StreamGetPriority(key, priority_key string) (string, error) {
-	return rc.GetInstance().GetVehicleChan(key, STREAM_PRIORITY_KEY)
+	return rc.GetInstance().GetVehicleChan(key, rc.STREAM_PRIORITY_KEY)
 }

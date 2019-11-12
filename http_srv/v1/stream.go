@@ -8,6 +8,7 @@ import (
 	gkbase "github.com/giskook/go/base"
 	gkhttp "github.com/giskook/go/http"
 	vcbase "github.com/giskook/vav-common/base"
+	rc "github.com/giskook/vav-common/redis_cli"
 	"net/url"
 	"strconv"
 	//rc "github.com/giskook/vav-common/redis_cli"
@@ -125,7 +126,7 @@ func stream_post(w http.ResponseWriter, r *http.Request) (int, string, interface
 	channel := vars["channel"]
 	go func() { redis_cli.AddKey(url.QueryEscape(stream.Number), sim) }()
 	if stream.Token != "" {
-		go func() { redis_cli.AddKey(redis_cli.VAVMS_TOKEN, stream.Token) }()
+		go func() { redis_cli.AddKey(rc.VAVMS_TOKEN, stream.Token) }()
 	}
 
 	err1, err2, err3 := stream_condition(sim)
@@ -142,7 +143,7 @@ func stream_post(w http.ResponseWriter, r *http.Request) (int, string, interface
 		// deal with re conn
 		url, _ := redis_cli.StreamPlayURL(redis_cli.GetIDChannel(sim, channel, stream_type))
 		if url != "" {
-			redis_cli.StreamReplacePriority(redis_cli.GetIDChannel(sim, channel, stream_type), redis_cli.STREAM_PRIORITY_KEY, stream.Priority)
+			redis_cli.StreamReplacePriority(redis_cli.GetIDChannel(sim, channel, stream_type), rc.STREAM_PRIORITY_KEY, stream.Priority)
 			return http.StatusOK, base.HTTP_OK_URL_ALREADY_EXIST, url, nil
 		}
 	} else {
@@ -152,7 +153,7 @@ func stream_post(w http.ResponseWriter, r *http.Request) (int, string, interface
 			return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR, nil, nil
 		}
 		if exists == 1 {
-			priority, err := redis_cli.StreamGetPriority(redis_cli.GetIDChannel(sim, channel, stream_type), redis_cli.STREAM_PRIORITY_KEY)
+			priority, err := redis_cli.StreamGetPriority(redis_cli.GetIDChannel(sim, channel, stream_type), rc.STREAM_PRIORITY_KEY)
 			if err != nil {
 				goto play
 			}
@@ -173,7 +174,7 @@ play:
 	if result == 1 {
 		return http.StatusConflict, base.HTTP_CONFLICT_PLAY, nil, nil
 	}
-	result, err = redis_cli.StreamPlayInit(redis_cli.GetIDChannel(sim, channel, stream_type), redis_cli.VAVMS_STREAM_DATA_TYPE_KEY, stream.DataType, redis_cli.VAVMS_STREAM_TTL_KEY, stream.TTL, redis_cli.STREAM_PRIORITY_KEY, stream.Priority)
+	result, err = redis_cli.StreamPlayInit(redis_cli.GetIDChannel(sim, channel, stream_type), redis_cli.VAVMS_STREAM_DATA_TYPE_KEY, stream.DataType, redis_cli.VAVMS_STREAM_TTL_KEY, stream.TTL, rc.STREAM_PRIORITY_KEY, stream.Priority)
 	if err != nil || result != 0 {
 		gkbase.ErrorCheckPlus(err, fmt.Sprintf("stream type %s, sim %s, channel %s result %d", stream_type, sim, channel, result))
 		return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR, nil, nil
