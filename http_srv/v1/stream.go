@@ -169,6 +169,7 @@ play:
 
 	result, err := redis_cli.SetPlayLock(redis_cli.GetIDChannel(sim, channel, "status"), stream_type, strconv.Itoa(conf.GetInstance().Play.PlayLockTTL))
 	if err != nil {
+		gkbase.ErrorCheckPlus(err, sim, channel)
 		return http.StatusInternalServerError, base.HTTP_INTERNAL_SERVER_ERROR_UPD_STREAM_MEDIA, nil, nil
 	}
 	if result == 1 {

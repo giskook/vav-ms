@@ -12,6 +12,7 @@ import (
 	"log"
 	"path"
 	"strconv"
+	"time"
 )
 
 const (
@@ -117,7 +118,14 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return err
 	}
 
-	ffmpeg_path, err := ffmpeg_symbol("vffmpeg_" + redis_cli.GetIDChannel(id, channel, vavms_info.Status))
+	ttl, err := strconv.Atoi(vavms_info.TTL)
+	if err != nil {
+		ttl = 500
+	}
+	tmp_t := time.Now().Add(time.Duration(ttl) * time.Second).Unix()
+
+	ffmpeg_name := redis_cli.GetIDChannel("ffmpeg", id, channel, vavms_info.Status)
+	ffmpeg_path, err := ffmpeg_symbol(ffmpeg_name + strconv.Itoa(int(tmp_t)))
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
@@ -162,15 +170,7 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return e
 	}
 
-	seconds, err := redis_cli.StreamGetTTL(redis_cli.GetIDChannel(id, channel, vavms_info.Status))
-	if err != nil {
-		log.Println("prepare info set time error, stream will use default ttl 500")
-	}
-	ttl, err := strconv.Atoi(seconds)
-	if err != nil {
-		ttl = 500
-	}
-	c.SetProperty(id, channel, vavms_info.Status, cmd, path_a, path_v, vavms_info.Acodec, vavms_info.Vcodec, ttl, play_type)
+	c.SetProperty(id, channel, vavms_info.Status, cmd, path_a, path_v, vavms_info.Acodec, vavms_info.Vcodec, ffmpeg_name, ttl, play_type)
 
 	return nil
 }
