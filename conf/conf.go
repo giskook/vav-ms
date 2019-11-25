@@ -37,6 +37,7 @@ type workspace_cnf struct {
 	FfmpegArgsAV string `json:"ffmpeg_args_av"`
 	FfmpegArgsA  string `json:"ffmpeg_args_a"`
 	FfmpegArgsV  string `json:"ffmpeg_args_v"`
+	FfmpegKiller string `json:"ffmpeg_killer"`
 }
 
 type http_cnf struct {

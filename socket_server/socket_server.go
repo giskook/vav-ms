@@ -125,7 +125,7 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	tmp_t := time.Now().Add(time.Duration(ttl) * time.Second).Unix()
 
 	ffmpeg_name := redis_cli.GetIDChannel("ffmpeg", id, channel, vavms_info.Status)
-	ffmpeg_path, err := ffmpeg_symbol(ffmpeg_name + strconv.Itoa(int(tmp_t)))
+	ffmpeg_path, err := ffmpeg_symbol(ffmpeg_name + "_" + strconv.Itoa(int(tmp_t)) + "_" + vavms_info.TTL)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
@@ -191,6 +191,7 @@ func NewSocketServer(conf *conf.Conf) *SocketServer {
 		TcpAddr:          conf.TCP.Addr,
 		ServerType:       ss.SERVER_TYPE_VAVMS,
 		DefaultReadLimit: conf.TCP.DefaultReadLimit,
+		FFmpegKiller:     conf.WorkSpace.FfmpegKiller,
 		Debug: &ss.DebugCnf{
 			Debug:       conf.Debug.Debug,
 			DestID:      conf.Debug.DestID,
