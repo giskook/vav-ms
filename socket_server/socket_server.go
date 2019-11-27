@@ -25,27 +25,27 @@ type SocketServer struct {
 }
 
 func (s *SocketServer) OnFfmpegExit(conn *ss.Connection) error {
-	redis_cli.StreamDelUrl(redis_cli.GetIDChannel(conn.SIM, conn.Channel, conn.PlayType))
-	conn.Close()
+	//	redis_cli.StreamDelUrl(redis_cli.GetIDChannel(conn.SIM, conn.Channel, conn.PlayType))
+	//	conn.Close()
 
 	return nil
 }
 
-func (s *SocketServer) get_play_type(info *vcbase.VavmsInfo) int {
-	play_type := 0
-	if info.DataType == rc.DATA_TYPE_AUDIO_VIDEO {
-		play_type |= 3
-	}
-	if info.DataType == rc.DATA_TYPE_VIDEO {
-		play_type |= 1
-	}
-	if info.DataType == rc.DATA_TYPE_TWO_WAY_INTERCOM ||
-		info.DataType == rc.DATA_TYPE_LISTEN {
-		play_type |= 2
-	}
-
-	return play_type
-}
+//func (s *SocketServer) get_play_type(info *vcbase.VavmsInfo) int {
+//	play_type := 0
+//	if info.DataType == rc.DATA_TYPE_AUDIO_VIDEO {
+//		play_type |= 3
+//	}
+//	if info.DataType == rc.DATA_TYPE_VIDEO {
+//		play_type |= 1
+//	}
+//	if info.DataType == rc.DATA_TYPE_TWO_WAY_INTERCOM ||
+//		info.DataType == rc.DATA_TYPE_LISTEN {
+//		play_type |= 2
+//	}
+//
+//	return play_type
+//}
 
 func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	vavms_info, err := rc.GetInstance().GetVavmsInfo(id, channel, s.conf.UUID, redis_cli.VAVMS_STREAM_MEDIA)
@@ -63,38 +63,30 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 	}
 
 	// pipe path and open pipe
-	open_pipe := func(play_type, aname, vname string) (string, string, error) {
+	open_pipe := func(aname, vname string) (string, string, error) {
 		var pipe_a, pipe_v string
-		if play_type == rc.DATA_TYPE_AUDIO_VIDEO ||
-			play_type == rc.DATA_TYPE_VIDEO {
-			pipe_v = path.Join(s.conf.WorkSpace.PipePath, id, channel, vname)
-			err = vcbase.Mkfifo(pipe_v)
-			if err != nil {
-				mybase.ErrorCheckPlus(err, id, channel)
-				return "", "", err
-			}
-			err = c.OpenPipeV(pipe_v)
-			if err != nil {
-				mybase.ErrorCheckPlus(err, id, channel)
-				return "", "", err
-			}
+		pipe_v = path.Join(s.conf.WorkSpace.PipePath, id, channel, vname)
+		err = vcbase.Mkfifo(pipe_v)
+		if err != nil {
+			mybase.ErrorCheckPlus(err, id, channel)
+			return "", "", err
+		}
+		err = c.OpenPipeV(pipe_v)
+		if err != nil {
+			mybase.ErrorCheckPlus(err, id, channel)
+			return "", "", err
 		}
 
-		if play_type == rc.DATA_TYPE_AUDIO_VIDEO ||
-			play_type == rc.DATA_TYPE_TWO_WAY_INTERCOM ||
-			play_type == rc.DATA_TYPE_LISTEN ||
-			play_type == rc.DATA_TYPE_BROADCAST {
-			pipe_a = path.Join(s.conf.WorkSpace.PipePath, id, channel, aname)
-			err = vcbase.Mkfifo(pipe_a)
-			if err != nil {
-				mybase.ErrorCheckPlus(err, id, channel)
-				return "", "", err
-			}
-			err = c.OpenPipeA(pipe_a)
-			if err != nil {
-				mybase.ErrorCheckPlus(err, id, channel)
-				return "", "", err
-			}
+		pipe_a = path.Join(s.conf.WorkSpace.PipePath, id, channel, aname)
+		err = vcbase.Mkfifo(pipe_a)
+		if err != nil {
+			mybase.ErrorCheckPlus(err, id, channel)
+			return "", "", err
+		}
+		err = c.OpenPipeA(pipe_a)
+		if err != nil {
+			mybase.ErrorCheckPlus(err, id, channel)
+			return "", "", err
 		}
 
 		return pipe_a, pipe_v, nil
@@ -112,7 +104,6 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return ffmpeg_path, nil
 	}
 
-	play_type := s.get_play_type(vavms_info)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
@@ -130,25 +121,17 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
 	}
-	path_a, path_v, err := open_pipe(vavms_info.DataType, "a"+vavms_info.Status, "v"+vavms_info.Status)
+	path_a, path_v, err := open_pipe("a"+vavms_info.Status, "v"+vavms_info.Status)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, id, channel)
 		return err
 	}
-	var cmd string
+	cmds := make([]string, 0)
 	url_inner := fmt.Sprintf(RTMP_FORMATER, vavms_info.StreamMedia.RtmpIpInner, vavms_info.StreamMedia.RtmpPortInner, vavms_info.StreamMedia.RtmpApplication, redis_cli.GetIDChannel(id, channel, vavms_info.Status))
 	url_outer := fmt.Sprintf(RTMP_FORMATER, vavms_info.StreamMedia.RtmpIpOutter, vavms_info.StreamMedia.RtmpPortOutter, vavms_info.StreamMedia.RtmpApplication, redis_cli.GetIDChannel(id, channel, vavms_info.Status))
-	switch play_type {
-	case 3:
-		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsAV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner)
-		break
-	case 1:
-		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsV, ffmpeg_path, vavms_info.Vcodec, path_v, url_inner)
-	case 2:
-		cmd = fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsA, ffmpeg_path, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner)
-	default:
-		return errors.New("not support")
-	}
+	cmds = append(cmds, fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsV, ffmpeg_path, vavms_info.Vcodec, path_v, url_inner))
+	cmds = append(cmds, fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsA, ffmpeg_path, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner))
+	cmds = append(cmds, fmt.Sprintf(s.conf.WorkSpace.FfmpegArgsAV, ffmpeg_path, vavms_info.Vcodec, path_v, vavms_info.Acodec, vavms_info.SamplingRate, path_a, url_inner))
 
 	result, err := redis_cli.StreamDestruct(redis_cli.GetIDChannel(id, channel, vavms_info.Status),
 		redis_cli.VAVMS_ACCESS_ADDR_UUID, s.conf.UUID,
@@ -170,7 +153,7 @@ func (s *SocketServer) OnPrepare(c *ss.Connection, id, channel string) error {
 		return e
 	}
 
-	c.SetProperty(id, channel, vavms_info.Status, cmd, path_a, path_v, vavms_info.Acodec, vavms_info.Vcodec, ffmpeg_name, ttl, play_type)
+	c.SetProperty(id, channel, vavms_info.Status, path_a, path_v, vavms_info.Acodec, vavms_info.Vcodec, ffmpeg_name, cmds, ttl)
 
 	return nil
 }
