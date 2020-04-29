@@ -18,6 +18,10 @@ All fields must be sent
 	"Port":"8875"
 }
 ```
+**curl**
+```
+curl -H "Content-Type:application/json" -d '{ "IP":"222.222.218.51", "Port":"8875"}' http://127.0.0.1:9001/vavms/api/v1/access_addr
+```
 ## Success Response
 
 **Condition** : access addr is set to redis correctly.

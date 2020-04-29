@@ -35,6 +35,7 @@ All fields must be sent
 `token` 监管请求视频需要设置
 
 **Data example** 
+```json
 {
 	"data_type":"0",
 	"ttl":"1000",
@@ -42,6 +43,11 @@ All fields must be sent
 	"number":"冀AD8V52",
 	"token":"ddxdbgda1"
 }
+```
+**curl**
+```
+curl -H "Content-Type:application/json" -d '{ "data_type":"0", "ttl":"1000", "priority":"101", "number":"冀AD8V52", "token":"ddxdbgda1" }' http://127.0.0.1:9001/vavms/api/v1/stream/2/17190604001/1
+```
 
 ## Success Response
 

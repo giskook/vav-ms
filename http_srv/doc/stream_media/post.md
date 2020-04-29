@@ -11,12 +11,11 @@ Create stream media for vavms
 **Data example** All fields must be sent
 
 ```json
-{ 
-	"stream_medias":
-		[
-		{"access_uuid":"vavms1","rtmp_application":"myapp","rtmp_ip_inner":"127.0.0.1", "rtmp_ip_outer":"222.222.218.52", "rtmp_port_inner":"8080", "rtmp_port_outter":"8023","http_location":"live", "http_ip_outer":"222.222.218.51", "http_port_outter":"9002" }
-		]
- }
+{ "stream_medias": [ {"access_uuid":"vavms1","rtmp_application":"myapp","rtmp_ip_inner":"127.0.0.1", "rtmp_ip_outter":"222.222.218.51", "rtmp_port_inner":"8080", "rtmp_port_outter":"8428","http_location":"live", "http_ip_outter":"222.222.218.51", "http_port_outter":"9003" } ] }
+```
+**curl指令**
+```
+curl -H "Content-Type:application/json" -d '{ "stream_medias": [ {"access_uuid":"vavms1","rtmp_application":"myapp","rtmp_ip_inner":"127.0.0.1", "rtmp_ip_outter":"222.222.218.51", "rtmp_port_inner":"8080", "rtmp_port_outter":"8428","http_location":"live", "http_ip_outter":"222.222.218.51", "http_port_outter":"9003" } ] }' http://127.0.0.1:9001/vavms/api/v1/stream_media
 ```
 ## Success Response
 

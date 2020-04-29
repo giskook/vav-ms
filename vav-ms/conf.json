@@ -22,7 +22,7 @@
 		"ffmpeg_killer":"ps ax | grep '%s' | awk -F ' ' '{print $1}' | xargs  kill -9"
 	},
 	"http":{
-		"Addr":":8888",
+		"Addr":":9001",
 		"t_write_time_out":"15s",
 		"t_read_time_out":"15s",
 		"t_idle_time_out":"60s",
@@ -34,6 +34,7 @@
 	"debug":{
 		"debug":false,
 		"dest_id":"17190828003", 
+		"_dest_id":"13731143001", 
 		"record_file_a":false
 	}
 }

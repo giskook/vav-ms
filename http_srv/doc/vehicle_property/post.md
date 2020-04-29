@@ -21,6 +21,10 @@ Filed audio format / audio sampling rate and vedio format is the index.The meani
 	"video_format":"98",
 }
 ```
+**curl**
+```
+curl -H "Content-Type:application/json" -d '{ "audio_format":"6", "audio_sampling_rate":"0", "video_format":"98" }' http://127.0.0.1:9001/vavms/api/v1/vehicle_property/17190604001
+```
 ## Success Response
 
 **Condition** : vehicle property is set to redis correctly.
